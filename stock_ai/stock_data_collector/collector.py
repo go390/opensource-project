@@ -1,8 +1,8 @@
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 import pandas as pd
 from pykrx import stock
-from config import START_DATE, END_DATE, MARKET, SLEEP_TIME
+from .config import START_DATE, END_DATE, MARKET, SLEEP_TIME
 import logging
 
 log = logging.getLogger(__name__)
@@ -18,7 +18,7 @@ class collect:
         if last_date == None:
             start = START_DATE
         else:
-            start = last_date.strftime("%Y%m%d")
+            start = (last_date + timedelta(days=1)).strftime("%Y%m%d")
         if END_DATE == None:
             end = datetime.now().strftime("%Y%m%d")
         else:
@@ -47,13 +47,13 @@ class collect:
             dataframe_price = dataframe_price.reset_index()
             dataframe_price['ticker'] = ticker
             dataframe_price = dataframe_price.rename(columns={
-                '시가' : 'market_price',
-                '고가' : 'high_price',
-                '저가' : 'low_price',
-                '종가' : 'closing_price',
-                '거래량' : 'volume',
+                '시가' : 'stock_open',
+                '고가' : 'stock_high',
+                '저가' : 'stock_low',
+                '종가' : 'stock_close',
+                '거래량' : 'stock_volume',
                 '거래대금' : 'trading_value',
-                '등락률' : 'net_change',
+                '등락률' : 'stock_change',
                 '시가총액' : 'market_cap',
                 '상장주식수' : 'listed_shares'
             })
@@ -69,7 +69,7 @@ class collect:
             dataframe_fundamental['ticker'] = ticker
             dataframe_fundamental = dataframe_fundamental.rename(columns={
                 'BPS' : 'bps', 'PER' : 'per', 'PBR' : 'pbr',
-                'EPS' : 'eps', 'DIV' : 'div', 'BPS' : 'bps'
+                'EPS' : 'eps', 'DIV' : 'div', 'DPS' : 'dps'
             })
             dataframe_fundamental.to_sql('daily_fundamental', engine, if_exists='append', index=False)
             time.sleep(SLEEP_TIME)
@@ -106,7 +106,21 @@ class collect:
                 'shorting_balance_ratio': shorting_balance['주식잔고비율'],
             }, index=shorting_volume.index)
             shorting_dataframe.index.name = 'date'
-            shorting_dataframe = shorting_balance.reset_index()
+            shorting_dataframe = shorting_dataframe.reset_index()
             shorting_dataframe['ticker'] = ticker
             shorting_dataframe.to_sql('daily_shorting', engine, if_exists='append', index=False)
             time.sleep(SLEEP_TIME)
+
+    def update_market(self, engine):
+        market_dataframe = stock.get_index_ohlcv(self.start, self.end, "1001")
+        market_dataframe.index.name = 'date'
+        market_dataframe = market_dataframe.reset_index()
+        market_dataframe = market_dataframe.rename(columns={
+            '시가' : 'market_open',
+            '고가' : 'market_high',
+            '저가' : 'market_low',
+            '종가' : 'market_end',
+            '거래량' : 'market_volume'
+        })
+        market_dataframe.to_sql('market_index', engine, if_exists='append', index=False)
+        time.sleep(SLEEP_TIME)

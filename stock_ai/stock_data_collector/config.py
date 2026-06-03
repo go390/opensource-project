@@ -34,17 +34,17 @@ stock_data = [
 
     """
     CREATE TABLE IF NOT EXISTS daily_price (
-        ticker        VARCHAR(10) NOT NULL,
-        date          DATE        NOT NULL,
-        open          BIGINT,
-        high          BIGINT,
-        low           BIGINT,
-        close         BIGINT,
-        volume        BIGINT,
-        trading_value BIGINT,
-        change_rate   DECIMAL(10, 4),
-        market_cap    BIGINT,
-        listed_shares BIGINT,
+        ticker          VARCHAR(10) NOT NULL,
+        date            DATE        NOT NULL,
+        stock_open      BIGINT,
+        stock_high      BIGINT,
+        stock_low       BIGINT,
+        stock_close     BIGINT,
+        stock_volume    BIGINT,
+        trading_value   BIGINT,
+        stock_change    DECIMAL(10, 4),
+        market_cap      BIGINT,
+        listed_shares   BIGINT,
         PRIMARY KEY (ticker, date),
         INDEX idx_date (date)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -52,14 +52,14 @@ stock_data = [
 
     """
     CREATE TABLE IF NOT EXISTS daily_fundamental (
-        ticker     VARCHAR(10) NOT NULL,
-        date       DATE        NOT NULL,
-        bps        BIGINT,
-        per        DECIMAL(14, 4),
-        pbr        DECIMAL(14, 4),
-        eps        BIGINT,
-        div_yield  DECIMAL(10, 4),
-        dps        BIGINT,
+        ticker      VARCHAR(10) NOT NULL,
+        date        DATE        NOT NULL,
+        bps         BIGINT,
+        per         DECIMAL(14, 4),
+        pbr         DECIMAL(14, 4),
+        eps         BIGINT,
+        div         DECIMAL(10, 4),
+        dps         BIGINT,
         PRIMARY KEY (ticker, date),
         INDEX idx_date (date)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -67,14 +67,14 @@ stock_data = [
 
     """
     CREATE TABLE IF NOT EXISTS daily_investor (
-        ticker             VARCHAR(10) NOT NULL,
-        date               DATE        NOT NULL,
-        foreign_net_volume BIGINT,
-        foreign_net_value  BIGINT,
-        institution_net_volume    BIGINT,
-        institution_net_value     BIGINT,
-        individual_net_volume    BIGINT,
-        individual_net_value     BIGINT,
+        ticker                  VARCHAR(10) NOT NULL,
+        date                    DATE        NOT NULL,
+        foreign_net_volume      BIGINT,
+        foreign_net_value       BIGINT,
+        institution_net_volume  BIGINT,
+        institution_net_value   BIGINT,
+        individual_net_volume   BIGINT,
+        individual_net_value    BIGINT,
         PRIMARY KEY (ticker, date),
         INDEX idx_date (date)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -82,14 +82,27 @@ stock_data = [
 
     """
     CREATE TABLE IF NOT EXISTS daily_shorting (
-        ticker                 VARCHAR(10) NOT NULL,
-        date                   DATE        NOT NULL,
-        shorting_volume        BIGINT,
-        shorting_volume_ratio  DECIMAL(10, 4),
-        shorting_balance       BIGINT,
-        shorting_balance_ratio DECIMAL(10, 4),
+        ticker                  VARCHAR(10) NOT NULL,
+        date                    DATE        NOT NULL,
+        shorting_volume         BIGINT,
+        shorting_volume_ratio   DECIMAL(10, 4),
+        shorting_balance        BIGINT,
+        shorting_balance_ratio  DECIMAL(10, 4),
         PRIMARY KEY (ticker, date),
         INDEX idx_date (date)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """,
+
     """
+    CREATE TABLE IF NOT EXISTS market_index (
+        date            DATE        NOT NULL,
+        market_open                 BIGINT,
+        market_high                 BIGINT,
+        market_low                  BIGINT,
+        market_end                  BIGINT,
+        market_volume               BIGINT,
+        PRIMARY KEY (date),
+        INDEX idx_date (date)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """    
 ]

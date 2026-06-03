@@ -1,9 +1,7 @@
 import logging
-import numpy as np
-import pandas as pd
 import pymysql
 from sqlalchemy import create_engine, text
-from config import DB_CONFIG, stock_data
+from .config import DB_CONFIG, stock_data
 
 log = logging.getLogger(__name__)
 
@@ -38,9 +36,10 @@ class DataBase:
         return self.engine
 
     def create_tables(self):
-        db_transaction = self.engine.begin()
+       with self.engine.begin() as db_transaction:
         for data in stock_data:
             db_transaction.execute(text(data))
+
 
     def last_modified_date(self, table):
         try:
