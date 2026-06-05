@@ -27,15 +27,19 @@ class collect:
     
     # 주식명 
     def update_name(self, engine):
-        stock_list = [] 
-        for ticker in self.tickers:
+        with engine.connect() as con:
+            db_tickers = pd.read_sql("SELECT ticker FROM company_info", con)
+        new_tickers = set(self.tickers) - set(db_tickers['ticker'])
+        stock_list = []
+        for ticker in new_tickers:
             stock_list.append({
                 'ticker' : ticker,
                 'name' : stock.get_market_ticker_name(ticker),
                 'market' : MARKET
                 })
             time.sleep(SLEEP_TIME)
-        pd.DataFrame(stock_list).to_sql('company_info', engine, if_exists='append', index=False)
+        if stock_list:
+            pd.DataFrame(stock_list).to_sql('company_info', engine, if_exists='append', index=False)
             
     # 가격 변동
     def update_price(self, engine):
