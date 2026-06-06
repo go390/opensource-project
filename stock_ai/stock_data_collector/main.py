@@ -1,5 +1,12 @@
 from .collector import collect
-from db import DataBase
+from .db import DataBase
+import logging
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s [%(levelname)s] %(name)s: %(message)s',
+    filename='collect.log'
+)
 
 def db_upload():
     db = DataBase()

@@ -1,0 +1,34 @@
+2026-06-06 14:58:40,131 [INFO] root: "None of [Index(['TRD_DD', 'BPS', 'PER', 'PBR', 'EPS', 'DVD_YLD', 'DPS'], dtype='object')] are in the [columns]"
+2026-06-06 14:58:40,132 [WARNING] stock_data_collector.collector: fundamental 365550 데이터 없음
+2026-06-06 15:05:56,316 [INFO] root: "None of [Index(['TRD_DD', 'BPS', 'PER', 'PBR', 'EPS', 'DVD_YLD', 'DPS'], dtype='object')] are in the [columns]"
+2026-06-06 15:05:56,316 [WARNING] stock_data_collector.collector: fundamental 204210 데이터 없음
+2026-06-06 15:07:35,990 [INFO] root: "None of [Index(['TRD_DD', 'BPS', 'PER', 'PBR', 'EPS', 'DVD_YLD', 'DPS'], dtype='object')] are in the [columns]"
+2026-06-06 15:07:35,990 [WARNING] stock_data_collector.collector: fundamental 415640 데이터 없음
+2026-06-06 15:07:39,523 [INFO] root: "None of [Index(['TRD_DD', 'BPS', 'PER', 'PBR', 'EPS', 'DVD_YLD', 'DPS'], dtype='object')] are in the [columns]"
+2026-06-06 15:07:39,523 [WARNING] stock_data_collector.collector: fundamental 432320 데이터 없음
+2026-06-06 15:18:28,235 [INFO] root: "None of [Index(['TRD_DD', 'BPS', 'PER', 'PBR', 'EPS', 'DVD_YLD', 'DPS'], dtype='object')] are in the [columns]"
+2026-06-06 15:18:28,235 [WARNING] stock_data_collector.collector: fundamental 400760 데이터 없음
+2026-06-06 15:18:59,391 [INFO] root: "None of [Index(['TRD_DD', 'BPS', 'PER', 'PBR', 'EPS', 'DVD_YLD', 'DPS'], dtype='object')] are in the [columns]"
+2026-06-06 15:18:59,391 [WARNING] stock_data_collector.collector: fundamental 338100 데이터 없음
+2026-06-06 15:25:45,542 [INFO] root: "None of [Index(['TRD_DD', 'BPS', 'PER', 'PBR', 'EPS', 'DVD_YLD', 'DPS'], dtype='object')] are in the [columns]"
+2026-06-06 15:25:45,543 [WARNING] stock_data_collector.collector: fundamental 395400 데이터 없음
+2026-06-06 15:53:08,536 [INFO] root: "None of [Index(['TRD_DD', 'BPS', 'PER', 'PBR', 'EPS', 'DVD_YLD', 'DPS'], dtype='object')] are in the [columns]"
+2026-06-06 15:53:08,536 [WARNING] stock_data_collector.collector: fundamental 0030R0 데이터 없음
+2026-06-06 16:08:10,440 [INFO] root: Expecting value: line 1 column 1 (char 0)
+2026-06-06 16:08:10,441 [WARNING] stock_data_collector.collector: fundamental 014825 데이터 없음
+2026-06-06 16:12:25,113 [INFO] root: "None of [Index(['TRD_DD', 'BPS', 'PER', 'PBR', 'EPS', 'DVD_YLD', 'DPS'], dtype='object')] are in the [columns]"
+2026-06-06 16:12:25,115 [WARNING] stock_data_collector.collector: fundamental 377190 데이터 없음
+2026-06-06 16:13:52,612 [INFO] root: "None of [Index(['TRD_DD', 'BPS', 'PER', 'PBR', 'EPS', 'DVD_YLD', 'DPS'], dtype='object')] are in the [columns]"
+2026-06-06 16:13:52,613 [WARNING] stock_data_collector.collector: fundamental 330590 데이터 없음
+2026-06-06 16:16:56,735 [INFO] root: "None of [Index(['TRD_DD', 'BPS', 'PER', 'PBR', 'EPS', 'DVD_YLD', 'DPS'], dtype='object')] are in the [columns]"
+2026-06-06 16:16:56,736 [WARNING] stock_data_collector.collector: fundamental 357430 데이터 없음
+2026-06-06 16:17:14,432 [INFO] root: "None of [Index(['TRD_DD', 'BPS', 'PER', 'PBR', 'EPS', 'DVD_YLD', 'DPS'], dtype='object')] are in the [columns]"
+2026-06-06 16:17:14,433 [WARNING] stock_data_collector.collector: fundamental 088980 데이터 없음
+2026-06-06 16:17:18,251 [INFO] root: "None of [Index(['TRD_DD', 'BPS', 'PER', 'PBR', 'EPS', 'DVD_YLD', 'DPS'], dtype='object')] are in the [columns]"
+2026-06-06 16:17:18,251 [WARNING] stock_data_collector.collector: fundamental 094800 데이터 없음
+2026-06-06 16:20:49,869 [INFO] root: "None of [Index(['TRD_DD', 'BPS', 'PER', 'PBR', 'EPS', 'DVD_YLD', 'DPS'], dtype='object')] are in the [columns]"
+2026-06-06 16:20:49,869 [WARNING] stock_data_collector.collector: fundamental 396690 데이터 없음
+2026-06-06 16:20:53,984 [INFO] root: "None of [Index(['TRD_DD', 'BPS', 'PER', 'PBR', 'EPS', 'DVD_YLD', 'DPS'], dtype='object')] are in the [columns]"
+2026-06-06 16:20:53,985 [WARNING] stock_data_collector.collector: fundamental 357250 데이터 없음
+2026-06-06 16:29:32,246 [INFO] root: "None of [Index(['TRD_DD', 'BPS', 'PER', 'PBR', 'EPS', 'DVD_YLD', 'DPS'], dtype='object')] are in the [columns]"
+2026-06-06 16:29:32,246 [WARNING] stock_data_collector.collector: fundamental 448730 데이터 없음
