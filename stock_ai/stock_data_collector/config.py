@@ -2,18 +2,23 @@ DB_CONFIG = {
     'host': 'localhost',
     'port': 3306,
     'user': 'root',
-    'password': 'go090312',
-    'database': 'stock_db',
+    'password': 'your_stock_db_password', #your DB password
+    'database': 'your_stock_db', # your DB
     'charset': 'utf8mb4'
 }
 
-# DB에 데이터가 없으면 여기서부터 수집, 있으면 마지막 저장일 다음날부터 수집
-# 두 DATE 모두 "yyyymmdd" 형식으로 작성되어야함
-START_DATE = '20200101'
-END_DATE = None  # None이면 최근 영업일로 자동 설정
+"""
+if there is no data on DB, it will collect from the start_date,
+if there is data on DB, it will collect from the last_modified_date
+two DATE should follow the form of "yyyymmdd"
+if the END_DATE is None it will be set to last business day
+"""
 
-MARKET = 'KOSPI'  # KOSPI 또는 KOSDAQ
-SLEEP_TIME = 0.5  # pykrx 요청 간 딜레이시간
+START_DATE = '20200101'
+END_DATE = None
+
+MARKET = 'KOSPI' # KOSPI or KOSDAQ
+SLEEP_TIME = 0.5 # delay time for calling pykrx (if it is too short you can be banned by the krx)
 
 INCREASE_RATE = 0.05
 FORWARD_DAYS  = 30

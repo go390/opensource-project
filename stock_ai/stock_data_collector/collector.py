@@ -14,7 +14,6 @@ class collect:
         self.tickers = stock.get_market_ticker_list(end, MARKET)
         self.total = len(self.tickers)
 
-    # 수집 시작, 종료 날짜 설정
     def check_date(self, table_name):
         last_date = self.db.last_modified_date(table_name)
         if last_date == None:
@@ -27,7 +26,6 @@ class collect:
             end = END_DATE
         return start, end
     
-    # 주식명 
     def update_name(self, engine):
         with engine.connect() as con:
             db_tickers = pd.read_sql("SELECT ticker FROM company_info", con)
@@ -47,7 +45,6 @@ class collect:
             pd.DataFrame(stock_list).to_sql('company_info', engine, if_exists='append', index=False)
             log.info("finished updating names")
             
-    # 가격 변동
     def update_price(self, engine):
         start, end = self.check_date('daily_price')
         if start > end:
@@ -86,7 +83,6 @@ class collect:
             time.sleep(SLEEP_TIME)
         log.info("finished updating prices")
     
-    # 보조 지표
     def update_fundamental(self, engine):
         start, end = self.check_date('daily_fundamental')
         if start > end:
@@ -150,7 +146,6 @@ class collect:
             time.sleep(SLEEP_TIME)
         log.info("finished updating investors")
     
-    # 공매도
     def update_shorting(self, engine):
         start, end = self.check_date('daily_shorting')
         if start > end:
