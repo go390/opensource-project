@@ -13,7 +13,7 @@ START_DATE = '20200101'
 END_DATE = None  # None이면 최근 영업일로 자동 설정
 
 MARKET = 'KOSPI'  # KOSPI 또는 KOSDAQ
-SLEEP_TIME = 0.3  # pykrx 요청 간 딜레이시간
+SLEEP_TIME = 0.5  # pykrx 요청 간 딜레이시간
 
 INCREASE_RATE = 0.05
 FORWARD_DAYS  = 30
