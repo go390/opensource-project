@@ -101,30 +101,38 @@ async function first_connect_websocket(state){
     return { websocket, approval_key };
 }
 
-function delete_websocket(state, ticker){
+function delete_websocket(state, ticker, websocket, approval_key){
     const {first, hot, cold, fixed} = state;
     if (fixed.has(ticker)){
-        fixed.delete(ticker)
-        cold.add(ticker)
+        if (hot.has(ticker)){
+            fixed.delete(ticker);
+            return state;
+        }
+        fixed.delete(ticker);
+        cold.add(ticker);
         websocket.send(websocket_message(approval_key, ticker, '0'));
+        // first중 추가
+        return state;
     }
-
-}
-
-function add_websocket(state, ticker){
-    const {first, hot, cold, fixed} = state;
     if (hot.has(ticker)){
         first.add(ticker);
+        hot.delete(ticker);
+        websocket.send(websocket_message(approval_key, ticker, '0'));
+    }
+}
+
+function add_websocket(state, ticker, websocket, approval_key){
+    const {first, hot, cold, fixed} = state;
+    if (hot.has(ticker)){
+        fixed.add(ticker);
         return state;
     }
     if (cold.has(ticker)){
         fixed.add(ticker);
-        hot.add(ticker);
+        websocket.send(websocket_message(approval_key, ticker, '1'));
         return state;
     }
 }
-
-
 
 module.exports = {
     get_websocket_key,
