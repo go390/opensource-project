@@ -1,0 +1,23 @@
+// mock data 
+export const stocks = [
+{ id: 1,  symbol: "005930", ticker: "SMSN", name: "Samsung Electronics", market: "KOSPI",  price: 71800,  change: 1200,   changePct:  1.70, volume: "12.45M", starred: true  },
+{ id: 2,  symbol: "035420", ticker: "NAVER", name: "NAVER", market: "KOSPI",  price: 234500, change: -3200, changePct: -1.35, volume: "0.89M", starred: true  },
+{ id: 3,  symbol: "035720", ticker: "KAKAO", name: "Kakao", market: "KOSPI",  price: 48750, change: 850, changePct: 1.77, volume: "1.52M", starred: false },
+{ id: 4,  symbol: "000660", ticker: "SKHY", name: "SK Hynix", market: "KOSPI", price: 168500, change: 4200, changePct: 2.56, volume: "3.24M", starred: false },
+{ id: 5,  symbol: "051910", ticker: "LGCM", name: "LG Chem", market: "KOSPI", price: 423000, change: -5600, changePct: -1.31, volume: "0.57M", starred: true },
+{ id: 6,  symbol: "005380", ticker: "HYMT", name: "Hyundai Motor", market: "KOSPI", price: 245000, change: 2100, changePct: 0.86, volume: "0.78M", starred: false },
+{ id: 7,  symbol: "068270", ticker: "CELL", name: "Celltrion", market: "KOSDAQ", price: 189400, change: -1800, changePct: -0.94, volume: "0.46M", starred: false },
+{ id: 8,  symbol: "207940", ticker: "BIOG", name: "Samsung Biologics", market: "KOSPI", price: 978000, change: 12000, changePct: 1.24, volume: "0.23M", starred: false },
+{ id: 9,  symbol: "006400", ticker: "SSDI", name: "Samsung SDI", market: "KOSPI", price: 312000, change: 3500, changePct: 1.13, volume: "0.31M", starred: false },
+{ id: 10, symbol: "373220", ticker: "LGES", name: "LG Energy Solution", market: "KOSPI", price: 415000, change: -2200, changePct: -0.53, volume: "0.19M", starred: false },
+{ id: 11, symbol: "247540", ticker: "KRFT", name: "Krafton", market: "KOSPI", price: 285000, change: 5500, changePct: 1.97, volume: "0.41M", starred: false },
+{ id: 12, symbol: "036570", ticker: "NCSF", name: "NCsoft", market: "KOSPI", price: 198000, change: -2100, changePct: -1.05, volume: "0.22M", starred: false },
+{ id: 13, symbol: "293490", ticker: "KGMS", name: "Kakao Games", market: "KOSDAQ", price: 21450, change: 350, changePct: 1.66, volume: "2.10M", starred: false },
+{ id: 14, symbol: "112040", ticker: "WMDE", name: "Wemade", market: "KOSDAQ", price: 42300, change: -800, changePct: -1.86, volume: "1.75M", starred: false },
+{ id: 15, symbol: "035900", ticker: "JYPE", name: "JYP Entertainment", market: "KOSDAQ", price: 78500, change: 1200, changePct: 1.55, volume: "0.95M", starred: false },
+{ id: 16, symbol: "041510", ticker: "SMEN", name: "SM Entertainment", market: "KOSDAQ", price: 95000, change: -500, changePct: -0.52, volume: "0.68M", starred: false },
+{ id: 17, symbol: "122870", ticker: "YGENT", name: "YG Entertainment", market: "KOSDAQ", price: 55200, change: 700, changePct: 1.28, volume: "0.51M", starred: false },
+{ id: 18, symbol: "145020", ticker: "HUGL", name: "Hugel", market: "KOSDAQ", price: 312000, change: -4500, changePct: -1.42, volume: "0.14M", starred: false },
+{ id: 19, symbol: "086520", ticker: "ECPR", name: "Ecopro", market: "KOSDAQ", price: 87400, change: 2100, changePct: 2.46, volume: "3.82M", starred: false },
+{ id: 20, symbol: "011200", ticker: "HMM", name: "HMM", market: "KOSPI", price: 18450, change: -250, changePct: -1.34, volume: "5.60M", starred: false },
+];

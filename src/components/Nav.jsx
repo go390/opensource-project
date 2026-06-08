@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Search, Globe, Menu, X } from "lucide-react";
 import logo from "../assets/logo.webp";
 import { Link } from "react-router-dom";
-
+import SearchBar from "./SearchBar";
 const Nav = ({ setShowLogin }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
@@ -29,14 +29,7 @@ const Nav = ({ setShowLogin }) => {
           </div>
 
           <div className="hidden md:flex flex-1 justify-center px-8">
-            <div className="relative w-full max-w-[580px]">
-              <Search size={20} className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search stocks..."
-                className="w-full h-[42px] rounded-2xl bg-[#F3F4F6] pl-14 pr-4 text-[16px] text-gray-700 placeholder:text-gray-400 outline-none border border-transparent focus:border-[#00E676]"
-              />
-            </div>
+            <SearchBar />
           </div>
 
           <div className="flex items-center gap-2 md:gap-6">
@@ -91,14 +84,7 @@ const Nav = ({ setShowLogin }) => {
 
         {showSearch && (
           <div className="md:hidden bg-white border-t border-gray-100 px-4 py-3">
-            <div className="relative">
-              <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search stocks..."
-                className="w-full h-11 rounded-xl bg-gray-100 pl-11 pr-4 outline-none"
-              />
-            </div>
+            <SearchBar />
           </div>
         )}
 
