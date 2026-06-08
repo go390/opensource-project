@@ -57,7 +57,7 @@ function LoginForm({onClose}) {
         ></div>
       </div>
 
-      <form className="space-y-3">
+      <form className="space-y-4">
         {!isLoginMode && (
           <input
             type="text"
@@ -89,13 +89,7 @@ function LoginForm({onClose}) {
           />
         )}
 
-        {isLoginMode && (
-          <div className="text-right">
-            <a href="#" className="text-cyan-600 hover:underline">
-              Forgot password?
-            </a>
-          </div>
-        )}
+      
 
         <button className="w-full p-3 bg-gradient-to-r from-green-700 via-cyan-600 to-cyan-200 text-white rounded-full text-lg font-medium hover:opacity-90 transition">
           {isLoginMode ? "Login" : "Signup"}
