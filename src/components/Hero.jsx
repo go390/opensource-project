@@ -15,10 +15,7 @@ const Hero = () => {
       <div className="absolute inset-0 bg-black/50" />
 
       <div className="relative max-w-screen-xl mx-auto px-6 pt-20 pb-16 flex flex-col items-center text-center">
-        <div className="inline-flex items-center gap-2 bg-[#0b1f17] border border-green-500/25 rounded-full px-5 py-2 mb-10">
-          <span className="w-2 h-2 rounded-full bg-green-400"></span>
-          <span className="text-green-400 text-sm font-medium">Live Market Analysis</span>
-        </div>
+      
 
         <h1 className="font-extrabold leading-[1.05] mb-6" style={{ fontSize: "clamp(3rem, 8vw, 5.5rem)" }}>
           <span className="text-white">Predict Tomorrow's</span>
