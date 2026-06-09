@@ -11,10 +11,20 @@ import About from "./pages/About";
 
 function App() {
   const [showLogin, setShowLogin] = useState(false);
-
+  const [user, setUser] = useState(() => {
+    const savedUser = localStorage.getItem("user");
+    if (savedUser) {
+      return JSON.parse(savedUser);
+    }
+    return null;
+  });
+  
   return (
     <BrowserRouter>
-      <Nav setShowLogin={setShowLogin} />
+      <Nav 
+        user={user}
+        setUser={setUser}
+        setShowLogin={setShowLogin} />
 
       <Routes>
         <Route path="/" element={<Home />} />
@@ -24,7 +34,9 @@ function App() {
       </Routes>
 
       {showLogin && (
-        <LoginModal onClose={() => setShowLogin(false)} />
+        <LoginModal 
+          setUser={setUser}
+          onClose={() => setShowLogin(false)} />
       )}
     </BrowserRouter>
   );

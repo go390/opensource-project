@@ -1,15 +1,47 @@
 import React, { useState } from "react";
 import logo from "../assets/logo.webp";
-import { X } from "lucide-react"
+import { X } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
-function LoginForm({onClose}) {
+function LoginForm({onClose,setUser}) {
   const [isLoginMode, setIsLoginMode] = useState(true);
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+
+  const handleLogin = (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    setTimeout(() => {
+      const userData = {
+        name: "Munkh",
+        email: "test@gmail.com",
+      };
+
+      localStorage.setItem(
+        "user",
+        JSON.stringify(userData)
+      );
+
+      setUser(userData);
+
+      setLoading(false);
+      onClose();
+      navigate("/");
+    }, 600);
+  };
+
+  const handleSignup = (e) => {
+    e.preventDefault();
+    alert("Account created successfully!");
+    setIsLoginMode(true);
+  };
 
   return (
     <div className="relative w-full max-w-[380px] bg-white p-5 sm:p-6 rounded-2xl shadow-xl">
       <button
         onClick={onClose}
-        className="absolute top-4 right-4 p-1 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition">
+        className="absolute top-4 right-4 p-1 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition cursor-pointer">
         <X size={20} />
       </button>
        <div className="flex items-center justify-center gap-1 mb-1">
@@ -57,7 +89,7 @@ function LoginForm({onClose}) {
         ></div>
       </div>
 
-      <form className="space-y-3">
+      <form onSubmit={isLoginMode ? handleLogin : handleSignup} className="space-y-3">
         {!isLoginMode && (
           <input
             type="text"
@@ -89,16 +121,16 @@ function LoginForm({onClose}) {
           />
         )}
 
-        {isLoginMode && (
-          <div className="text-right">
-            <a href="#" className="text-cyan-600 hover:underline">
-              Forgot password?
-            </a>
-          </div>
-        )}
-
-        <button className="w-full p-3 bg-gradient-to-r from-green-700 via-cyan-600 to-cyan-200 text-white rounded-full text-lg font-medium hover:opacity-90 transition">
-          {isLoginMode ? "Login" : "Signup"}
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full p-3 bg-gradient-to-r from-green-700 via-cyan-600 to-cyan-200 text-white rounded-full text-lg font-medium hover:opacity-90 transition disabled:opacity-50"
+        >
+          {loading
+            ? "Logging in..."
+            : isLoginMode
+              ? "Login"
+              : "Signup"}
         </button>
 
         <p className="text-center text-gray-600">

@@ -3,7 +3,8 @@ import { Search, Globe, Menu, X } from "lucide-react";
 import logo from "../assets/logo.webp";
 import { Link } from "react-router-dom";
 import SearchBar from "./SearchBar";
-const Nav = ({ setShowLogin }) => {
+import UserProfile from "./UserProfile";
+const Nav = ({user,setUser,setShowLogin }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [language, setLanguage] = useState("EN");
@@ -17,7 +18,7 @@ const Nav = ({ setShowLogin }) => {
           <div className="flex items-center">
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="lg:hidden p-2 rounded-lg hover:scale-105 transition-transform"
+              className="lg:hidden p-2 rounded-lg hover:scale-105 transition-transform cursor-pointer"
             >
               {isOpen ? <X size={26} /> : <Menu size={26} />}
             </button>
@@ -49,7 +50,7 @@ const Nav = ({ setShowLogin }) => {
             <div className="relative">
               <button
                 onClick={() => setLangOpen(!langOpen)}
-                className="flex items-center gap-1 px-4 py-2 border border-gray-200 rounded-2xl hover:bg-gray-50 transition"
+                className="flex items-center gap-1 px-4 py-2 border border-gray-200 rounded-2xl hover:bg-gray-50 transition cursor-pointer"
               >
                 <Globe size={18} />
                 <span className="text-[16px] font-medium text-slate-700">{language}</span>
@@ -73,12 +74,17 @@ const Nav = ({ setShowLogin }) => {
               )}
             </div>
 
-            <button
-              onClick={() => setShowLogin(true)}
-              className="bg-[#081633] text-white px-6 py-2 rounded-xl md:rounded-2xl font-semibold hover:bg-[#10224a] transition"
-            >
-              Login
-            </button>
+            {
+            user ? (
+              <UserProfile user={user} setUser={setUser}/> ) : (
+              <button
+                onClick={() => setShowLogin(true)}
+                className="bg-[#081633] text-white px-6 py-2 rounded-xl font-semibold hover:bg-[#10224a] transition cursor-pointer"
+              >
+                Login
+              </button>
+            )
+          }
           </div>
         </div>
 

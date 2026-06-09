@@ -3,7 +3,6 @@ import { Search } from "lucide-react";
 import { Link } from "react-router-dom";
 import { stocks } from "../data/stocks";
 
-
 const SearchBar = () => {
   const [query, setQuery] = useState("");
 

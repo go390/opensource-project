@@ -38,7 +38,7 @@ function TeamMemberCard({ member }) {
           {member.initials}
         </div>
         <div className="min-w-0">
-          <p className="font-bold text-gray-900 text-sm truncate">{member.name}</p>
+          <p className="font-semibold text-gray-900 text-sm truncate">{member.name}</p>
           <p className="text-xs text-gray-500 truncate">{member.role}</p>
         </div>
       </div>
