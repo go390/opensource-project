@@ -1,9 +1,13 @@
 import Nav from "../components/Nav";
 import StockList from "../components/StockList";
 
-function Stocks({ setShowLogin }) {
+function Stocks({ stocks, watchlist, onToggle }) {
   return (
-      <StockList />
+    <StockList
+      stocks={stocks}
+      watchlist={watchlist}
+      onToggle={onToggle}
+    />
   );
 }
 

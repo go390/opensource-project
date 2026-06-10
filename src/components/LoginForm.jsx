@@ -89,11 +89,7 @@ function LoginForm({onClose,setUser}) {
         ></div>
       </div>
 
-<<<<<<< HEAD
       <form onSubmit={isLoginMode ? handleLogin : handleSignup} className="space-y-3">
-=======
-      <form className="space-y-4">
->>>>>>> d71dab25d702ef3249be9922d0be1387e73789e7
         {!isLoginMode && (
           <input
             type="text"
@@ -125,23 +121,16 @@ function LoginForm({onClose,setUser}) {
           />
         )}
 
-<<<<<<< HEAD
         <button
           type="submit"
           disabled={loading}
-          className="w-full p-3 bg-gradient-to-r from-green-700 via-cyan-600 to-cyan-200 text-white rounded-full text-lg font-medium hover:opacity-90 transition disabled:opacity-50"
+          className="w-full p-3 bg-gradient-to-r from-green-700 via-cyan-600 to-cyan-200 text-white rounded-full text-lg font-medium hover:opacity-90 transition disabled:opacity-50 cursor-pointer"
         >
           {loading
             ? "Logging in..."
             : isLoginMode
               ? "Login"
               : "Signup"}
-=======
-      
-
-        <button className="w-full p-3 bg-gradient-to-r from-green-700 via-cyan-600 to-cyan-200 text-white rounded-full text-lg font-medium hover:opacity-90 transition">
-          {isLoginMode ? "Login" : "Signup"}
->>>>>>> d71dab25d702ef3249be9922d0be1387e73789e7
         </button>
 
         <p className="text-center text-gray-600">

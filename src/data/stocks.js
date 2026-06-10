@@ -1,10 +1,10 @@
 // mock data 
 export const stocks = [
-{ id: 1,  symbol: "005930", ticker: "SMSN", name: "Samsung Electronics", market: "KOSPI",  price: 71800,  change: 1200,   changePct:  1.70, volume: "12.45M", starred: true  },
-{ id: 2,  symbol: "035420", ticker: "NAVER", name: "NAVER", market: "KOSPI",  price: 234500, change: -3200, changePct: -1.35, volume: "0.89M", starred: true  },
+{ id: 1,  symbol: "005930", ticker: "SMSN", name: "Samsung Electronics", market: "KOSPI",  price: 71800,  change: 1200,   changePct:  1.70, volume: "12.45M", starred: false  },
+{ id: 2,  symbol: "035420", ticker: "NAVER", name: "NAVER", market: "KOSPI",  price: 234500, change: -3200, changePct: -1.35, volume: "0.89M", starred: false  },
 { id: 3,  symbol: "035720", ticker: "KAKAO", name: "Kakao", market: "KOSPI",  price: 48750, change: 850, changePct: 1.77, volume: "1.52M", starred: false },
 { id: 4,  symbol: "000660", ticker: "SKHY", name: "SK Hynix", market: "KOSPI", price: 168500, change: 4200, changePct: 2.56, volume: "3.24M", starred: false },
-{ id: 5,  symbol: "051910", ticker: "LGCM", name: "LG Chem", market: "KOSPI", price: 423000, change: -5600, changePct: -1.31, volume: "0.57M", starred: true },
+{ id: 5,  symbol: "051910", ticker: "LGCM", name: "LG Chem", market: "KOSPI", price: 423000, change: -5600, changePct: -1.31, volume: "0.57M", starred: false },
 { id: 6,  symbol: "005380", ticker: "HYMT", name: "Hyundai Motor", market: "KOSPI", price: 245000, change: 2100, changePct: 0.86, volume: "0.78M", starred: false },
 { id: 7,  symbol: "068270", ticker: "CELL", name: "Celltrion", market: "KOSDAQ", price: 189400, change: -1800, changePct: -0.94, volume: "0.46M", starred: false },
 { id: 8,  symbol: "207940", ticker: "BIOG", name: "Samsung Biologics", market: "KOSPI", price: 978000, change: 12000, changePct: 1.24, volume: "0.23M", starred: false },

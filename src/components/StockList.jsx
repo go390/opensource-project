@@ -4,7 +4,6 @@ import {
   AlignJustify, ChevronDown, ChevronLeft, ChevronRight, Check,
   LineChart,
 } from "lucide-react";
-import { stocks } from "../data/stocks";
 
 const marketStyles = {
   KOSPI:  { label: "KOSPI",  bg: "bg-blue-50",   text: "text-blue-700",   border: "border-blue-200"   },
@@ -24,14 +23,9 @@ function MarketBadge({ market }) {
 
 const PAGE_SIZE = 10;
 
-export default function StockList() {
+export default function StockList({ stocks, watchlist, onToggle}) {
   const [activeFilter, setActiveFilter] = useState("All Stocks");
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [watchlist, setWatchlist] = useState(() => {
-    const map = {};
-    stocks.forEach(s => { map[s.id] = s.starred; });
-    return map;
-  });
   const [query, setQuery]       = useState("");
   const [page, setPage]         = useState(1);
   const [navOpen, setNavOpen]   = useState(false);
@@ -59,8 +53,6 @@ export default function StockList() {
     setDropdownOpen(false);
     setPage(1);
   };
-
-  const toggleWatchlist = (id) => setWatchlist(prev => ({ ...prev, [id]: !prev[id] }));
 
   const formatPrice = (n) => "₩" + Math.abs(n).toLocaleString();
 
@@ -137,7 +129,7 @@ export default function StockList() {
                         className={`border-b border-gray-50 hover:bg-gray-50/70 transition cursor-pointer ${i === pageItems.length - 1 ? "border-b-0" : ""}`}>
 
                         <td className="pl-5 pr-2 py-5">
-                          <button onClick={() => toggleWatchlist(stock.id)} className="focus:outline-none">
+                          <button onClick={() => onToggle(stock.id)} className="focus:outline-none cursor-pointer">
                             <Star
                               size={17}
                               fill={isStarred ? "#22c55e" : "none"}
