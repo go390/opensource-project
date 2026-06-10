@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Search } from "lucide-react";
+import { Search,X } from "lucide-react";
 import { Link } from "react-router-dom";
 import { stocks } from "../data/stocks";
 
@@ -26,7 +26,15 @@ const SearchBar = () => {
         onChange={(e) => setQuery(e.target.value)}
         className="w-full h-[42px] rounded-2xl bg-[#F3F4F6] pl-14 pr-4 text-[16px] text-gray-700 placeholder:text-gray-400 outline-none border border-transparent focus:border-[#00E676]"
       />
-
+      
+      {query && (
+        <button 
+          onClick={()=> setQuery("")}
+          className="absolute top-2 right-3 p-1 rounded-lg text-gray-400 hover:text-gray-400 hover:bg-gray-100 transition cursor-pointer">
+          <X size={20}/>
+        </button>
+      )}
+      
       {query.trim() && (
         <div className="absolute top-full mt-2 w-full bg-white border border-gray-200 rounded-xl shadow-lg overflow-y-auto max-h-80 z-50">
           {filteredStocks.length > 0 ? (

@@ -34,7 +34,6 @@ function App() {
     );
   }, [watchlist]);
 
-
   const [toast, setToast] = useState(null);
 
   const toggleWatchlist = (id) => {

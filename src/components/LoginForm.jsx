@@ -18,13 +18,9 @@ function LoginForm({onClose,setUser}) {
         email: "test@gmail.com",
       };
 
-      localStorage.setItem(
-        "user",
-        JSON.stringify(userData)
-      );
+      localStorage.setItem("user", JSON.stringify(userData));
 
       setUser(userData);
-
       setLoading(false);
       onClose();
       navigate("/");

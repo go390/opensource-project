@@ -1,5 +1,4 @@
 import { LineChart } from "lucide-react";
-import TradingViewWidget from "../components/TradingViewWidget"
 
 function MarketTrend() {
   return (
@@ -16,7 +15,8 @@ function MarketTrend() {
 
       <div
         className="h-[420px] rounded-2xl border border-dashed border-gray-200 flex flex-col items-center justify-center text-gray-400">
-        <TradingViewWidget />
+        <p>Will add chart here</p>
+        <LineChart size={30}/>
 
       </div>
     </div>
