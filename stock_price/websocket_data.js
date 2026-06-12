@@ -66,6 +66,32 @@ function websocket_message(approval_key, ticker, tr_type){
     })
 }
 
+async function rest_get_price(rest_key, ticker){
+    const params = new URLSearchParams({
+        'FID_COND_MRKT_DIV_CODE' : 'UN',
+        'FID_INPUT_ISCD' : ticker
+    });
+    const response = await fetch(
+        api_key + '/uapi/domestic-stock/v1/quotations/inquire-price?' + params, {
+            method : 'GET',
+            headers : {
+                'content-type' : 'application/json; charset=utf-8',
+                'authorization' : 'Bearer ' + rest_key,
+                'appkey' : APP_KEY,
+                'appsecret' : APP_SECRET,
+                'tr_id' : 'FHKST01010100',
+                'custtype' : 'P'
+            }
+        }
+    );
+    const data = await response.json();
+    const current_price = data.output.stck_prpr;
+    const open_price = data.output.stck_oprc;
+    const low_price = data.output.stck_lwpr;
+    const high_price = data.output.stck_hgpr;
+    return { current_price, open_price, low_price, high_price };
+}
+
 function handle_message(websocket, data){
     if (data[0] === '0' || data[0] === '1'){
         const [flag, tr_id, data_count, body] = data.split('|');
@@ -83,22 +109,23 @@ async function set_websocket(){
     const tickers = rows.map(row => row.ticker);
     const hot = new Set(tickers.slice(0, limit));
     const cold = new Set(tickers.slice(limit));
-    return {hot, cold, fixed: new Set()};
+    return {first, hot, cold, fixed: new Set()};
 }
 
-async function first_connect_websocket(state){
-    const approval_key = await get_websocket_key();
+async function first_connect(state){
+    const websocket_key = await get_websocket_key();
+    const rest_key = await get_rest_key();
     const websocket = new WebSocket(domain);
 
     websocket.on('open', () => {
-        for (const ticker of state.hot) { websocket.send(websocket_message(approval_key, ticker, '1')); }
+        for (const ticker of state.hot) { websocket.send(websocket_message(websocket_key, ticker, '1')); }
     });
 
     websocket.on('message', (data) => handle_message(websocket, data.toString()));
     websocket.on('error', (error) => console.error('websocket error:', error));
     websocket.on('close', () => console.log('websocket closed'));
 
-    return { websocket, approval_key };
+    return { websocket, websocket_key };
 }
 
 function delete_websocket(state, ticker, websocket, approval_key){
@@ -135,9 +162,8 @@ function add_websocket(state, ticker, websocket, approval_key){
 }
 
 module.exports = {
-    get_websocket_key,
-    get_rest_key,
-    set_websocket,
-    modify_websocket,
+    first_connect,
+    add_websocket,
+    delete_websocket,
     limit
 };
