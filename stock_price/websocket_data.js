@@ -135,6 +135,8 @@ async function first_connect(){
     websocket.on('error', (error) => console.error('websocket error:', error));
     websocket.on('close', () => console.log('websocket closed'));
 
+    start_rest(state);
+
     return { websocket, websocket_key, state };
 }
 
@@ -183,7 +185,6 @@ function add_websocket(state, ticker, websocket, websocket_key){
 
 async function start_rest(state){
     const request_delay = 60
-
     let running  = true;
     let rest_key = await get_rest_key();
     async function loop(){
@@ -219,7 +220,6 @@ module.exports = {
     first_connect,
     add_websocket,
     delete_websocket,
-    start_rest,
     price_store,
     limit
 };
