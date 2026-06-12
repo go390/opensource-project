@@ -14,8 +14,9 @@ DB_CONFIG = {
     'charset': 'utf8mb4'
 }
 
-const limit = 40;
 const pool = mysql.createPool(DB_CONFIG).promise();
+const limit = 40;
+const price_store = new Map();
 
 async function get_websocket_key(){
     const response = await fetch(
@@ -49,10 +50,10 @@ async function get_rest_key(){
     return data.access_token;
 }
 
-function websocket_message(approval_key, ticker, tr_type){
+function websocket_message(websocket_key, ticker, tr_type){
     return JSON.stringify({
         header:{
-            'approval_key' : approval_key,
+            'approval_key' : websocket_key,
             'custtype' : 'P',
             'tr_type' : tr_type,
             'content-type' : 'utf-8'
@@ -97,7 +98,17 @@ function handle_message(websocket, data){
         const [flag, tr_id, data_count, body] = data.split('|');
         const response = body.split('^');
         const ticker = response[0];
-        const stock_price = response[2];
+        const current_price = response[2];
+        const open_price = response[7];
+        const high_price = response[8];
+        const low_price = response[9];
+
+        price_store.set(ticker, {
+            current_price : current_price,
+            open_price : open_price,
+            low_price : low_price,
+            high_price : high_price
+        });
         return;
     }
 }
@@ -109,14 +120,13 @@ async function set_websocket(){
     const tickers = rows.map(row => row.ticker);
     const hot = new Set(tickers.slice(0, limit));
     const cold = new Set(tickers.slice(limit));
-    return {first, hot, cold, fixed: new Set()};
+    return { first: new Set(), hot, cold, fixed: new Set() };
 }
 
-async function first_connect(state){
+async function first_connect(){
     const websocket_key = await get_websocket_key();
-    const rest_key = await get_rest_key();
     const websocket = new WebSocket(domain);
-
+    const state = await set_websocket();
     websocket.on('open', () => {
         for (const ticker of state.hot) { websocket.send(websocket_message(websocket_key, ticker, '1')); }
     });
@@ -125,10 +135,10 @@ async function first_connect(state){
     websocket.on('error', (error) => console.error('websocket error:', error));
     websocket.on('close', () => console.log('websocket closed'));
 
-    return { websocket, websocket_key };
+    return { websocket, websocket_key, state };
 }
 
-function delete_websocket(state, ticker, websocket, approval_key){
+function delete_websocket(state, ticker, websocket, websocket_key){
     const {first, hot, cold, fixed} = state;
     if (fixed.has(ticker)){
         if (hot.has(ticker)){
@@ -137,33 +147,79 @@ function delete_websocket(state, ticker, websocket, approval_key){
         }
         fixed.delete(ticker);
         cold.add(ticker);
-        websocket.send(websocket_message(approval_key, ticker, '0'));
-        // first중 추가
-        return state;
+        websocket.send(websocket_message(websocket_key, ticker, '2'));
+
+        if (first.size > 0){
+            const last = [...first].at(-1);
+            cold.delete(last);
+            first.delete(last);
+            hot.add(last);
+            websocket.send(websocket_message(websocket_key, last, '1'));
+        }
     }
-    if (hot.has(ticker)){
-        first.add(ticker);
-        hot.delete(ticker);
-        websocket.send(websocket_message(approval_key, ticker, '0'));
-    }
+    else { return state; }
 }
 
-function add_websocket(state, ticker, websocket, approval_key){
+function add_websocket(state, ticker, websocket, websocket_key){
     const {first, hot, cold, fixed} = state;
     if (hot.has(ticker)){
         fixed.add(ticker);
         return state;
     }
     if (cold.has(ticker)){
+        const last = [...hot].reverse().find(stock => !fixed.has(stock));
+        if (!last) { return state; }
+
         fixed.add(ticker);
-        websocket.send(websocket_message(approval_key, ticker, '1'));
+        cold.delete(ticker);
+        hot.delete(last);
+        websocket.send(websocket_message(websocket_key, last, '2'));
+        first.add(last);
+        cold.add(last);
+        websocket.send(websocket_message(websocket_key, ticker, '1'));
         return state;
     }
+}
+
+async function start_rest(state){
+    const request_delay = 60
+
+    let running  = true;
+    let rest_key = await get_rest_key();
+    async function loop(){
+        while (running){
+            const snapshot = [...state.cold];
+            for (const ticker of snapshot){
+                if (!running) break;
+                if (!state.cold.has(ticker)) continue;
+                try {
+                    const { current_price, open_price, low_price, high_price } = await rest_get_price(rest_key, ticker);
+                    price_store.set(ticker, {
+                        current_price : current_price,
+                        open_price : open_price,
+                        low_price : low_price,
+                        high_price : high_price
+                    });
+                } catch (err) {
+                    console.error("rest_key expired");
+                    rest_key = await get_rest_key();
+                }
+                await sleep(request_delay);
+            }
+        }
+    }
+    loop();
+}
+
+function sleep(ms){
+    return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 module.exports = {
     first_connect,
     add_websocket,
     delete_websocket,
+    start_rest,
+    price_store,
     limit
 };
