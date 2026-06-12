@@ -220,6 +220,5 @@ module.exports = {
     first_connect,
     add_websocket,
     delete_websocket,
-    price_store,
-    limit
+    price_store
 };
