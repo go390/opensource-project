@@ -36,10 +36,9 @@ class DataBase:
         return self.engine
 
     def create_tables(self):
-       with self.engine.begin() as db_transaction:
+        with self.engine.begin() as db_transaction:
             for data in stock_data:
                 db_transaction.execute(text(data))
-
 
     def last_modified_date(self, table):
         try:
