@@ -3,7 +3,8 @@ import { Search, Globe, Menu, X } from "lucide-react";
 import logo from "../assets/logo.webp";
 import { Link } from "react-router-dom";
 import SearchBar from "./SearchBar";
-const Nav = ({ setShowLogin }) => {
+import UserProfile from "./UserProfile";
+const Nav = ({user,setUser,setShowLogin }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [language, setLanguage] = useState("EN");
@@ -73,12 +74,17 @@ const Nav = ({ setShowLogin }) => {
               )}
             </div>
 
-            <button
-              onClick={() => setShowLogin(true)}
-              className="bg-[#081633] text-white px-6 py-2 rounded-xl md:rounded-2xl font-semibold hover:bg-[#10224a] transition cursor-pointer"
-            >
-              Login
-            </button>
+            {
+            user ? (
+              <UserProfile user={user} setUser={setUser}/> ) : (
+              <button
+                onClick={() => setShowLogin(true)}
+                className="bg-[#081633] text-white px-6 py-2 rounded-xl font-semibold hover:bg-[#10224a] transition cursor-pointer"
+              >
+                Login
+              </button>
+            )
+          }
           </div>
         </div>
 

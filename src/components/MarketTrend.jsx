@@ -15,15 +15,9 @@ function MarketTrend() {
 
       <div
         className="h-[420px] rounded-2xl border border-dashed border-gray-200 flex flex-col items-center justify-center text-gray-400">
-        <LineChart size={52} />
+        <p>Will add chart here</p>
+        <LineChart size={30}/>
 
-        <p className="mt-4 text-lg font-semibold">
-          Live Market Chart
-        </p>
-
-        <p className="text-sm">
-          TradingView widget will be added here
-        </p>
       </div>
     </div>
   );

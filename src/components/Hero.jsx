@@ -9,14 +9,7 @@ const Hero = () => {
       <img
         src={heroImage}
         alt=""
-        className="
-          absolute inset-0
-          w-full h-full
-          object-cover
-          object-center
-          select-none
-          pointer-events-none
-        "
+        className="absolute inset-0 w-full h-full object-cover object-center select-none pointer-events-none"
       />
 
       <div className="absolute inset-0 bg-black/50" />
