@@ -4,19 +4,19 @@ import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { stocks } from "../data/stocks";
 
-const buyStocks     = stocks.filter(s =>["buy"].includes(s.recommendation));
+const buyStocks = stocks.filter(s => ["buy"].includes(s.recommendation));
 const neutralStocks = stocks.filter(s => ["neutral"].includes(s.recommendation));
-const sellStocks    = stocks.filter(s => ["sell"].includes(s.recommendation));
+const sellStocks = stocks.filter(s => ["sell"].includes(s.recommendation));
 
 function StockCard({ stock, mood }) {
   const isUp = stock.changePct >= 0;
   const navigate = useNavigate();
   const leftBorder =
-    mood === "buy"  ? "border-l-green-500" :
-    mood === "sell" ? "border-l-red-500"   : "border-l-blue-400";
+    mood === "buy" ? "border-l-green-500" :
+      mood === "sell" ? "border-l-red-500" : "border-l-blue-400";
 
   return (
-    <div 
+    <div
       onClick={() => navigate(`/stocks/${stock.symbol}`)}
       className={`bg-white rounded-xl border border-gray-200 border-l-4 ${leftBorder} p-3 sm:p-4 hover:shadow-md transition-shadow`}>
       <p className="font-semibold text-gray-900 text-sm truncate">{stock.name}</p>
@@ -24,9 +24,8 @@ function StockCard({ stock, mood }) {
       <div className="flex items-center justify-between gap-2">
         <span className="font-bold text-gray-900 text-sm sm:text-base">₩{stock.price.toLocaleString()}</span>
         <span
-          className={`text-xs sm:text-sm font-semibold whitespace-nowrap ${
-            isUp ? "text-green-500" : "text-red-500"
-          }`}
+          className={`text-xs sm:text-sm font-semibold whitespace-nowrap ${isUp ? "text-green-500" : "text-red-500"
+            }`}
         >
           {isUp ? "+" : ""}
           {stock.changePct.toFixed(2)}%
@@ -36,8 +35,8 @@ function StockCard({ stock, mood }) {
   );
 }
 
-function RecommendationColumn({ label, stocks, mood, Color, viewAllPath,}) {
-  const lineColor  = Color === "green" ? "bg-green-500"   : Color === "red" ? "bg-red-500"   : "bg-blue-400";
+function RecommendationColumn({ label, stocks, mood, Color, viewAllPath, }) {
+  const lineColor = Color === "green" ? "bg-green-500" : Color === "red" ? "bg-red-500" : "bg-blue-400";
   const labelColor = Color === "green" ? "text-green-600" : Color === "red" ? "text-red-500" : "text-blue-500";
 
   return (
@@ -53,7 +52,7 @@ function RecommendationColumn({ label, stocks, mood, Color, viewAllPath,}) {
         {stocks.slice(0, 4).map((stock) => (
           <StockCard key={stock.id} stock={stock} mood={mood} />
         ))}
-        
+
         <Link
           to={viewAllPath}
           className="w-full border border-dashed border-gray-300 rounded-xl py-2.5 sm:py-3 text-xs sm:text-sm text-gray-500 hover:bg-gray-50 transition flex items-center justify-center gap-1"

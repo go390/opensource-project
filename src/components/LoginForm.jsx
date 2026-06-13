@@ -7,6 +7,8 @@ function LoginForm({onClose,setUser}) {
   const [isLoginMode, setIsLoginMode] = useState(true);
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   const handleLogin = (e) => {
     e.preventDefault();
@@ -29,6 +31,11 @@ function LoginForm({onClose,setUser}) {
 
   const handleSignup = (e) => {
     e.preventDefault();
+    if (password.length < 8) 
+      return;
+    if (password !== confirmPassword)
+      return;
+    
     alert("Account created successfully!");
     setIsLoginMode(true);
   };
@@ -105,16 +112,37 @@ function LoginForm({onClose,setUser}) {
           type="password"
           placeholder="Password"
           required
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
           className="w-full p-3 border-b-2 border-gray-300 outline-none focus:border-cyan-500 placeholder-gray-400"
         />
 
         {!isLoginMode && (
-          <input
-            type="password"
-            placeholder="Confirm Password"
-            required
-            className="w-full p-3 border-b-2 border-gray-300 outline-none focus:border-cyan-500 placeholder-gray-400"
-          />
+          <>
+            <input
+              type="password"
+              placeholder="Confirm Password"
+              required
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className="w-full p-3 border-b-2 border-gray-300 outline-none focus:border-cyan-500 placeholder-gray-400"
+            />
+            {password && password.length < 8 && (
+              <p className="text-amber-500 text-sm">
+                Password must be at least 8 characters
+              </p>
+            )}
+            {confirmPassword && password.length >= 8 && password !== confirmPassword && (
+              <p className="text-red-500 text-sm">
+                Passwords do not match
+              </p>
+            )}
+            {confirmPassword && password.length >= 8 && password === confirmPassword && (
+              <p className="text-green-500 text-sm">
+                Passwords match ✓
+              </p>
+            )}
+          </>
         )}
 
         <button
