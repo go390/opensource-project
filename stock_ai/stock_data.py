@@ -1,4 +1,4 @@
-from stock_data_collector.config import INCREASE_RATE, STOP_RATE, FORWARD_DAYS, TEST_RATIO
+from stock_data_collector.config import INCREASE_RATE, FORWARD_DAYS, TEST_RATIO
 from stock_data_collector.db import DataBase
 import pandas as pd
 import numpy as np
@@ -94,23 +94,23 @@ class create_features:
     def correct_label(self):
         close = self.data['stock_close']
         g = self.data.groupby('ticker')['stock_close']
-        upper = close * (1 + INCREASE_RATE)
-        lower = close * (1 - STOP_RATE)
-        n = len(close)
-        first_up = np.full(n, np.inf)
-        first_dn = np.full(n, np.inf)
+        upper = (close * (1 + INCREASE_RATE)).values
+        lower = (close * (1 - INCREASE_RATE)).values
+        count = len(close)
+        first_up = np.full(count, np.inf)
+        first_dn = np.full(count, np.inf)
 
-        for k in range(1, FORWARD_DAYS + 1):
-            fwd = g.shift(-k).values
-            hit_up = fwd >= upper.values
-            hit_dn = fwd <= lower.values
-            first_up[hit_up & np.isinf(first_up)] = k
-            first_dn[hit_dn & np.isinf(first_dn)] = k
+        for i in range(1, FORWARD_DAYS + 1):
+            fwd = g.shift(-i).values
+            first_up[(fwd >= upper) & np.isinf(first_up)] = i
+            first_dn[(fwd <= lower) & np.isinf(first_dn)] = i
 
         has_window = g.shift(-FORWARD_DAYS).notna().values
-        target = (first_up < first_dn).astype(float)
-        undecided = np.isinf(first_up) & np.isinf(first_dn)
-        target[undecided & ~has_window] = np.nan
+        target = np.full(count, 1.0)
+        target[first_up < first_dn] = 2.0
+        target[first_dn < first_up] = 0.0
+        neither = np.isinf(first_up) & np.isinf(first_dn)
+        target[neither & ~has_window] = np.nan
         self.data['target'] = target
 
 def prepare():

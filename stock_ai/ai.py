@@ -9,8 +9,9 @@ def train():
     valid_set = lgb.Dataset(X_test,  label=y_test, reference=train_set)
 
     params = {
-        'objective':  'binary',
-        'metric':     'binary_logloss',
+        'objective':  'multiclass',
+        'num_class':  3,
+        'metric':     'multi_logloss',
         'verbosity':  -1,
     }
     

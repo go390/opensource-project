@@ -136,5 +136,20 @@ stock_data = [
         PRIMARY KEY (date),
         INDEX idx_date (date)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """,
+
+    """
+    CREATE TABLE IF NOT EXISTS ai_signal (
+        ticker          VARCHAR(10) NOT NULL,
+        date            DATE        NOT NULL,
+        prob_sell       DECIMAL(6, 4),
+        prob_neutral    DECIMAL(6, 4),
+        prob_buy        DECIMAL(6, 4),
+        `signal`        VARCHAR(10),
+        reasons         JSON,
+        explanation     TEXT,
+        PRIMARY KEY (ticker, date),
+        INDEX idx_date (date)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     """
 ]
