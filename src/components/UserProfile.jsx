@@ -3,7 +3,7 @@ import { LogOut, Star } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Watchlist from "./Watchlist";
 
-function UserProfile({ user, setUser }) {
+function UserProfile({ user, setUser, setWatchlist }) {
   const [open, setOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
   const navigate = useNavigate();
@@ -13,7 +13,9 @@ function UserProfile({ user, setUser }) {
     navigate("/");
     setTimeout(() => {
       localStorage.removeItem("user");
+      localStorage.removeItem("watchlist");  
       setUser(null);
+      setWatchlist({});
       setLoggingOut(false);
     }, 500);
   };

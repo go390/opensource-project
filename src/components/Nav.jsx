@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 import SearchBar from "./SearchBar";
 import UserProfile from "./UserProfile";
 
-const Nav = ({user,setUser,setShowLogin }) => {
+const Nav = ({user,setUser,setShowLogin,setWatchlist}) => {
   const [isOpen, setIsOpen] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [language, setLanguage] = useState("EN");
@@ -50,7 +50,7 @@ const Nav = ({user,setUser,setShowLogin }) => {
 
             {
             user ? (
-              <UserProfile user={user} setUser={setUser}/> ) : (
+              <UserProfile user={user} setUser={setUser} setWatchlist={setWatchlist} /> ) : (
               <button
                 onClick={() => setShowLogin(true)}
                 className="bg-[#081633] text-white px-6 py-2 rounded-xl font-semibold hover:bg-[#10224a] transition cursor-pointer"

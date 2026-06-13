@@ -19,15 +19,15 @@ const teamMembers = [
     initials: "MB",
     name:     "Munkh-Orgil Batzaya",
     role:     "Front-End",
-    email:    "Mo@gmail.com",
-    phone:    "+82-10-2222-2222",
+    email:    "munkhorgil0207b@gmail.com",
+    phone:    "+82-10-8089-8334",
   },
 ];
 
 const projectStats = [
   { value: "3",   label: "Team Members"        },
   { value: "68%", label: "Prediction Accuracy" },
-  { value: "36+", label: "Tracked Stocks"      },
+  { value: "900+", label: "Tracked Stocks"      },
 ];
 
 function TeamMemberCard({ member }) {
@@ -74,7 +74,7 @@ export default function AboutUs() {
         <div className="bg-white rounded-2xl border border-gray-200 p-6 sm:p-10 text-center max-w-4xl mx-auto">
           <h2 className="text-xl sm:text-2xl font-black text-gray-900 mb-4">About StockSense</h2>
           <p className="text-gray-600 text-sm leading-relaxed">
-            StockSense is a website with AI prediction.
+            StockSense is an AI-powered stock market platform that helps users track stocks, analyze market trends, and make informed investment decisions through intelligent recommendations and real-time insights.
           </p>
 
           <div className="mt-8 sm:mt-10 grid grid-cols-3 gap-3 sm:gap-6 pt-6 sm:pt-8 border-t border-gray-100">

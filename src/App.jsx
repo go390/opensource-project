@@ -62,7 +62,8 @@ function App() {
       <Nav
         user={user}
         setUser={setUser}
-        setShowLogin={setShowLogin} />
+        setShowLogin={setShowLogin}
+        setWatchlist={setWatchlist} />
 
       <Routes>
         <Route path="/" element={<Home />} />
