@@ -1,17 +1,18 @@
 import { TrendingUp, TrendingDown, ArrowRight } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link,useNavigate } from "react-router-dom";
 
-const topStocks = [
-  { id: 1, symbol: "005930", name: "Samsung Electronics", price: 71800,  change: 1200,  changePct: 1.7  },
-  { id: 2, symbol: "035420", name: "NAVER",               price: 234500, change: -3200, changePct: -1.35 },
-  { id: 3, symbol: "035720", name: "Kakao",               price: 48750,  change: 850,   changePct: 1.77  },
-];
+import { stocks } from "../data/stocks";
+
+const topStocks = [...stocks].sort((a, b) => b.volume - a.volume).slice(0, 3);
 
 function StockRow({ stock }) {
+  const navigate = useNavigate();
   const isUp = stock.changePct >= 0;
 
   return (
-    <div className="bg-white border border-gray-100 rounded-2xl p-4 mb-4 last:mb-0 shadow-sm">
+    <div 
+      onClick={() => navigate(`/stocks/${stock.symbol}`)}
+      className="bg-white border border-gray-100 rounded-2xl p-4 mb-4 last:mb-0 hover:bg-gray-50/70 transition shadow-sm cursor-pointer">
       <div className="flex justify-between items-center">
         <div>
           <div className="flex items-center gap-2">

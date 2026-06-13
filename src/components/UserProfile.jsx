@@ -10,6 +10,7 @@ function UserProfile({ user, setUser }) {
 
   const handleLogout = () => {
     setLoggingOut(true);
+    navigate("/");
     setTimeout(() => {
       localStorage.removeItem("user");
       setUser(null);

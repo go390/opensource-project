@@ -41,7 +41,7 @@ const SearchBar = () => {
             filteredStocks.map((stock) => (
               <Link
                 key={stock.ticker}
-                to={`/stocks/${stock.ticker}`}
+                to={`/stocks/${stock.symbol}`}
                 onClick={() => setQuery("")}
                 className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors"
               >

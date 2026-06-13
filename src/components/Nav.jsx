@@ -4,6 +4,7 @@ import logo from "../assets/logo.webp";
 import { Link } from "react-router-dom";
 import SearchBar from "./SearchBar";
 import UserProfile from "./UserProfile";
+
 const Nav = ({user,setUser,setShowLogin }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
@@ -45,33 +46,6 @@ const Nav = ({user,setUser,setShowLogin }) => {
               <Link to="/stocks" className="text-[16px] font-medium text-slate-700 hover:text-black">Stocks</Link>
               <Link to="/Dashboard" className="text-[16px] font-medium text-slate-700 hover:text-black">AI Dashboard</Link>
               <Link to="/About" className="text-[16px] font-medium text-slate-700 hover:text-black">About Us</Link>
-            </div>
-
-            <div className="relative">
-              <button
-                onClick={() => setLangOpen(!langOpen)}
-                className="flex items-center gap-1 px-4 py-2 border border-gray-200 rounded-2xl hover:bg-gray-50 transition cursor-pointer"
-              >
-                <Globe size={18} />
-                <span className="text-[16px] font-medium text-slate-700">{language}</span>
-              </button>
-
-              {langOpen && (
-                <div className="absolute right-0 top-full mt-2 w-40 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden z-50">
-                  <button
-                    onClick={() => { setLanguage("EN"); setLangOpen(false); }}
-                    className={`w-full text-left px-5 py-4 text-sm hover:bg-gray-100 transition ${language === "EN" ? "bg-gray-100 font-medium" : ""}`}
-                  >
-                    English
-                  </button>
-                  <button
-                    onClick={() => { setLanguage("KO"); setLangOpen(false); }}
-                    className={`w-full text-left px-5 py-4 text-sm hover:bg-gray-100 transition ${language === "KO" ? "bg-gray-100 font-medium" : ""}`}
-                  >
-                    한국어
-                  </button>
-                </div>
-              )}
             </div>
 
             {

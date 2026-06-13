@@ -9,6 +9,8 @@ import LoginModal from "./components/LoginModal";
 import WatchlistToast from "./components/WatchlistToast";
 import Dashboard from "./pages/Dashboard";
 import About from "./pages/About";
+import StockDetail from "./pages/StockDetail";
+import ViewAll from "./pages/ViewAll";
 import { stocks } from "./data/stocks";
 
 function App() {
@@ -70,6 +72,7 @@ function App() {
             watchlist={watchlist}
             onToggle={toggleWatchlist} />
         } />
+        <Route path="/stocks/:symbol" element={<StockDetail/>} />
         <Route path="/watchlist" element={
           <Watchlist
             stocks={stocks}
@@ -77,6 +80,10 @@ function App() {
             onToggle={toggleWatchlist} />
         } />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route 
+          path="/dashboard/recommendations/:type" 
+          element={<ViewAll />} 
+        />
         <Route path="/about" element={<About />} />
       </Routes>
 

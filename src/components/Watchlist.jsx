@@ -1,7 +1,9 @@
 import { TrendingUp, TrendingDown, Star } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export default function Watchlist({ stocks, watchlist, onToggle }) {
   const watchlistStocks = stocks.filter((s) => watchlist[s.id]);
+  const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-white font-sans">
@@ -55,7 +57,8 @@ export default function Watchlist({ stocks, watchlist, onToggle }) {
                   return (
                     <tr
                       key={stock.id}
-                      className={`hover:bg-gray-50/60 transition ${!isLast ? "border-b border-gray-50" : ""}`}
+                      onClick={() => navigate(`/stocks/${stock.symbol}`)}
+                      className={`hover:bg-gray-50/70 transition cursor-pointer ${!isLast ? "border-b border-gray-50" : ""}`}
                     >
                       <td className="px-6 py-5">
                         <div className={`w-8 h-8 rounded-full flex items-center justify-center ${isUp ? "bg-green-50" : "bg-red-50"}`}>
@@ -90,7 +93,10 @@ export default function Watchlist({ stocks, watchlist, onToggle }) {
 
                       <td className="px-6 py-5 text-right">
                         <button
-                          onClick={() => onToggle(stock.id)}
+                          onClick={(e) =>{
+                            e.stopPropagation();
+                            onToggle(stock.id);
+                          }}
                           className="focus:outline-none cursor-pointer"
                           title="Remove from watchlist"
                         >
