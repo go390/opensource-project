@@ -1,4 +1,4 @@
-from stock_data_collector.config import INCREASE_RATE, FORWARD_DAYS, TEST_RATIO, MODEL_PATH
+from stock_data_collector.config import INCREASE_RATE, FORWARD_DAYS, TEST_RATIO
 from stock_data_collector.db import DataBase
 import pandas as pd
 import numpy as np
@@ -92,3 +92,6 @@ class create_features:
         self.data['BB'] = (self.data['stock_close'] - mid + 2 * std) / (4 * std)
         # hl_spread
         self.data['hl_spread'] = (self.data['stock_high'] - self.data['stock_low']) / self.data['stock_close']
+
+    def correct_label(self):
+        

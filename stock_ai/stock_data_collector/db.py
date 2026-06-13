@@ -1,14 +1,16 @@
 import logging
 import pymysql
+from typing import Optional
 from sqlalchemy import create_engine, text
 from .config import DB_CONFIG
+from sqlalchemy.engine import Engine
 
 log = logging.getLogger(__name__)
 
 class DataBase:
     def __init__(self):
         self.config = DB_CONFIG
-        self.engine = None
+        self.engine : Optional[Engine] = None
 
     def create_database(self):
         db = pymysql.connect(
