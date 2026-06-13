@@ -143,7 +143,7 @@ def predict_and_store(table_name='ai_signal'):
         sig = signals[i]
         reasons = top_reasons(shap_values[i, :, SIGNAL_CLASS[sig]])
         probs = {k: float(v[i]) for k, v in prob_by_signal.items()}
-        reasons_col.append(json.dumps(reasons, ensure_ascii=False))
+        reasons_col.append(json.dumps([r['feature'] for r in reasons], ensure_ascii=False))
         explanation_col.append(build_explanation(sig, reasons, probs))
     latest['reasons'] = reasons_col
     latest['explanation'] = explanation_col
@@ -151,10 +151,10 @@ def predict_and_store(table_name='ai_signal'):
     out = latest[['ticker', 'date', 'prob_sell', 'prob_neutral', 'prob_buy', 'signal', 'reasons', 'explanation']].reset_index(drop=True)
     out['date'] = pd.to_datetime(out['date']).dt.date
 
-    # 날짜별 이력 보관: 같은 날짜를 다시 예측하면 그 날짜만 교체하고 과거 예측은 유지
+
     db = DataBase()
     engine = db.connect()
-    db.create_tables()  # ai_signal 스키마 보장 (PK: ticker+date)
+    db.create_tables()
     run_dates = list(dict.fromkeys(out['date'].tolist()))
     with engine.begin() as conn:
         conn.execute(

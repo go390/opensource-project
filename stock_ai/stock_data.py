@@ -61,8 +61,6 @@ class create_features:
         self.data['individual_net_volume_20d'] = tickers_individual.rolling(20).sum().reset_index(level=0, drop=True)
 
     def shorting(self):
-        # 공매도 잔고는 거래 데이터보다 늦게 공시돼 최근 며칠이 비는데(NULL),
-        # 잔고는 느리게 변하는 값이라 직전 값으로 채워 최근 날짜도 산출되게 한다.
         self.data['shorting_balance'] = self.data.groupby('ticker')['shorting_balance'].ffill()
         shorting_volume = self.data.groupby('ticker')['shorting_volume_ratio']
         shorting_balance = self.data.groupby('ticker')['shorting_balance']
