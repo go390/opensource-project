@@ -1,7 +1,6 @@
 from stock_data_collector.config import MODEL_PATH
 import lightgbm as lgb
 from stock_data import prepare
-import shap
 
 def train():
     X_train, y_train, X_test, y_test = prepare()

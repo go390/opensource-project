@@ -1,21 +1,19 @@
-from stock_data_collector.config import INCREASE_RATE, FORWARD_DAYS, TEST_RATIO
+from stock_data_collector.config import INCREASE_RATE, STOP_RATE, FORWARD_DAYS, TEST_RATIO
 from stock_data_collector.db import DataBase
 import pandas as pd
 import numpy as np
 from sqlalchemy import text
 
 FEATURES = [
-    'ma5_ratio', 'ma20_ratio', 'ma60_ratio', 'ma120_ratio',
-    'volume_ratio_ma20', 'rsi', 'macd', 'BB', 'hl_spread',
-    'change_rate', 'change_rate_ma5', 'change_rate_ma20',
+    'ma20_ratio', 'ma60_ratio', 'ma120_ratio',
+    'rsi', 'macd', 'BB', 'hl_spread',
+    'change_rate_ma5', 'change_rate_ma20',
     'per', 'pbr', 'eps', 'div_yield',
     'foreign_net_volume_5d', 'foreign_net_volume_20d',
     'institution_net_volume_5d',    'institution_net_volume_20d',
     'individual_net_volume_5d',    'individual_net_volume_20d',
-    'shorting_ratio_ma10', 'shorting_bal_ma10'
+    'shorting_ratio_ma10', 'shorting_bal_ma10', 'excess_return_ma20'
 ]
-
-
 
 class create_features:
     def __init__(self):
@@ -42,14 +40,12 @@ class create_features:
 
     def ma_ratio(self):
         tickers = self.data.groupby('ticker')['stock_close']
-        self.data['ma5_ratio'] = self.data['stock_close'] / tickers.rolling(5).mean().reset_index(level=0, drop=True)
         self.data['ma20_ratio'] = self.data['stock_close'] / tickers.rolling(20).mean().reset_index(level=0, drop=True)
         self.data['ma60_ratio'] = self.data['stock_close'] / tickers.rolling(60).mean().reset_index(level=0, drop=True)
         self.data['ma120_ratio'] = self.data['stock_close'] / tickers.rolling(120).mean().reset_index(level=0, drop=True)
 
     def change_rate(self):
         tickers = self.data.groupby('ticker')['stock_change']
-        self.data['change_rate'] = self.data['stock_change']
         self.data['change_rate_ma5'] = tickers.rolling(5).mean().reset_index(level=0, drop=True)
         self.data['change_rate_ma20'] = tickers.rolling(20).mean().reset_index(level=0, drop=True)
 
@@ -57,8 +53,6 @@ class create_features:
         tickers_foreign = self.data.groupby('ticker')['foreign_net_volume']
         tickers_institution = self.data.groupby('ticker')['institution_net_volume']
         tickers_individual = self.data.groupby('ticker')['individual_net_volume']
-        volume = self.data.groupby('ticker')['stock_volume']
-        self.data['volume_ratio_ma20'] = self.data['stock_volume'] / volume.rolling(20).mean().reset_index(level=0, drop=True)
         self.data['foreign_net_volume_5d'] = tickers_foreign.rolling(5).sum().reset_index(level=0, drop=True)
         self.data['foreign_net_volume_20d'] = tickers_foreign.rolling(20).sum().reset_index(level=0, drop=True)
         self.data['institution_net_volume_5d'] = tickers_institution.rolling(5).sum().reset_index(level=0, drop=True)
@@ -77,7 +71,7 @@ class create_features:
         close = self.data.groupby('ticker')['stock_close']
         ema12 = close.ewm(span=12, adjust=False).mean()
         ema26 = close.ewm(span=26, adjust=False).mean()
-        self.data['macd'] = (ema12-ema26).reset_index(level=0, drop=True)
+        self.data['macd'] = (ema12-ema26).reset_index(level=0, drop=True) / self.data['stock_close']
         # rsi
         gain = close.diff()
         gain[gain<0] = 0
@@ -92,6 +86,48 @@ class create_features:
         self.data['BB'] = (self.data['stock_close'] - mid + 2 * std) / (4 * std)
         # hl_spread
         self.data['hl_spread'] = (self.data['stock_high'] - self.data['stock_low']) / self.data['stock_close']
+        # market_change
+        market_change = self.data.groupby('ticker')['market_end'].pct_change() * 100
+        excess_return= self.data['stock_change'] - market_change
+        self.data['excess_return_ma20'] = excess_return.groupby(self.data['ticker']).rolling(20).mean().reset_index(level=0, drop=True)
 
     def correct_label(self):
-        
+        close = self.data['stock_close']
+        g = self.data.groupby('ticker')['stock_close']
+        upper = close * (1 + INCREASE_RATE)
+        lower = close * (1 - STOP_RATE)
+        n = len(close)
+        first_up = np.full(n, np.inf)
+        first_dn = np.full(n, np.inf)
+
+        for k in range(1, FORWARD_DAYS + 1):
+            fwd = g.shift(-k).values
+            hit_up = fwd >= upper.values
+            hit_dn = fwd <= lower.values
+            first_up[hit_up & np.isinf(first_up)] = k
+            first_dn[hit_dn & np.isinf(first_dn)] = k
+
+        has_window = g.shift(-FORWARD_DAYS).notna().values
+        target = (first_up < first_dn).astype(float)
+        undecided = np.isinf(first_up) & np.isinf(first_dn)
+        target[undecided & ~has_window] = np.nan
+        self.data['target'] = target
+
+def prepare():
+    feature = create_features()
+    feature.ma_ratio()
+    feature.change_rate()
+    feature.volumes()
+    feature.shorting()
+    feature.features_etc()
+    feature.correct_label()
+
+    data = (feature.data.dropna(subset=FEATURES + ['target'])).sort_values('date')
+
+    split = int(len(data) * (1 - TEST_RATIO))
+    train_data = data.iloc[:split]
+    test_data = data.iloc[split:]
+
+    X_train, y_train = train_data[FEATURES], train_data['target']
+    X_test, y_test = test_data[FEATURES], test_data['target']
+    return X_train, y_train, X_test, y_test
