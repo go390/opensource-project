@@ -2,8 +2,8 @@ DB_CONFIG = {
     'host': 'localhost',
     'port': 3306,
     'user': 'root',
-    'password': 'your DB password', #your DB password
-    'database': 'your DB', # your DB
+    'password': 'go090312', #your DB password
+    'database': 'stock_db', # your DB
     'charset': 'utf8mb4'
 }
 

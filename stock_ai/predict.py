@@ -1,9 +1,12 @@
 from stock_data_collector.config import MODEL_PATH
+from stock_data_collector.db import DataBase
 from stock_data import create_features, FEATURES
 import numpy as np
+import pandas as pd
 import lightgbm as lgb
 import shap
 import json
+from sqlalchemy import text, bindparam
 
 FEATURE_LABELS = {
     'ma20_ratio': '20일 이동평균선 대비 주가',
@@ -146,9 +149,22 @@ def predict_and_store(table_name='ai_signal'):
     latest['explanation'] = explanation_col
 
     out = latest[['ticker', 'date', 'prob_sell', 'prob_neutral', 'prob_buy', 'signal', 'reasons', 'explanation']].reset_index(drop=True)
-    out.to_sql(table_name, features.engine, if_exists='replace', index=False)
+    out['date'] = pd.to_datetime(out['date']).dt.date
 
-    print(f"{table_name}에 {len(out)}개 종목 저장 완료")
+    # 날짜별 이력 보관: 같은 날짜를 다시 예측하면 그 날짜만 교체하고 과거 예측은 유지
+    db = DataBase()
+    engine = db.connect()
+    db.create_tables()  # ai_signal 스키마 보장 (PK: ticker+date)
+    run_dates = list(dict.fromkeys(out['date'].tolist()))
+    with engine.begin() as conn:
+        conn.execute(
+            text(f"DELETE FROM {table_name} WHERE date IN :dates").bindparams(
+                bindparam('dates', expanding=True)),
+            {'dates': run_dates},
+        )
+    out.to_sql(table_name, engine, if_exists='append', index=False)
+
+    print(f"{table_name}에 {len(out)}개 종목 저장 완료 (날짜: {', '.join(map(str, run_dates))})")
     print(out['signal'].value_counts().to_string())
     return out
 
