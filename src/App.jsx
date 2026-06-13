@@ -12,6 +12,7 @@ import About from "./pages/About";
 import { stocks } from "./data/stocks";
 
 function App() {
+  
   const [showLogin, setShowLogin] = useState(false);
   const [user, setUser] = useState(() => {
     const savedUser = localStorage.getItem("user");
