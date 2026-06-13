@@ -57,7 +57,7 @@ function LoginForm({onClose}) {
         ></div>
       </div>
 
-      <form className="space-y-4">
+      <form className="space-y-3">
         {!isLoginMode && (
           <input
             type="text"
@@ -88,8 +88,6 @@ function LoginForm({onClose}) {
             className="w-full p-3 border-b-2 border-gray-300 outline-none focus:border-cyan-500 placeholder-gray-400"
           />
         )}
-
-      
 
         <button className="w-full p-3 bg-gradient-to-r from-green-700 via-cyan-600 to-cyan-200 text-white rounded-full text-lg font-medium hover:opacity-90 transition">
           {isLoginMode ? "Login" : "Signup"}

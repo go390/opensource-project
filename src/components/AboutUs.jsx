@@ -62,7 +62,7 @@ export default function AboutUs() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
 
         <div className="text-center mb-8 sm:mb-12">
-          <h1 className="text-2xl sm:text-3xl font-black text-gray-900 mb-3">Meet the Team</h1>
+          <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Meet the Team</h1>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5 mb-8 sm:mb-10 max-w-4xl mx-auto">

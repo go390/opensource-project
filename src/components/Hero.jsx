@@ -22,7 +22,6 @@ const Hero = () => {
       <div className="absolute inset-0 bg-black/50" />
 
       <div className="relative max-w-screen-xl mx-auto px-6 pt-20 pb-16 flex flex-col items-center text-center">
-      
 
         <h1 className="font-extrabold leading-[1.05] mb-6" style={{ fontSize: "clamp(3rem, 8vw, 5.5rem)" }}>
           <span className="text-white">Predict Tomorrow's</span>
