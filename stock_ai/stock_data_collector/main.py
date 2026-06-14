@@ -16,9 +16,9 @@ def db_upload():
     col = collect(db)
 
     col.update_name(engine)
-    col.update_price(engine)
     col.update_investor(engine)
     col.update_fundamental(engine)
+    col.update_price(engine)
     col.update_shorting(engine)
     col.update_market(engine)
 
