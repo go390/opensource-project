@@ -180,7 +180,7 @@ export default function StockDetail() {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <StatCard label="PER"    value={stock.per  ?? "—"}               sub="Price/Earnings Ratio"  />
             <StatCard label="PBR"    value={stock.pbr  ?? "—"}               sub="Price/Book Ratio"      />
-            <StatCard label="ROI"    value={stock.roi  ? `${stock.roi}%` : "—"} sub="Return on Investment" />
+            <StatCard label="ROE"    value={stock.roe != null ? `${stock.roe}%` : "—"} sub="Return on Equity" />
             <StatCard label="Volume" value={stock.volume ?? "—"}             sub="Trading Volume"        />
           </div>
         </div>

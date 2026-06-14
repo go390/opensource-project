@@ -394,7 +394,9 @@ app.get('/api/stocks/:symbol', optionalAuthenticate, async (req, res) => {
       weekLow: Number(range.week_low || latestPrice.stock_close),
       per: fundamental.per ? Number(fundamental.per) : null,
       pbr: fundamental.pbr ? Number(fundamental.pbr) : null,
-      roi: 12.8,
+      roe: (fundamental.eps && fundamental.bps)
+        ? Number(((fundamental.eps / fundamental.bps) * 100).toFixed(2))
+        : null,
       ai: {
         signal: aiSignalText,
         explanation: signal.explanation || 'The AI sees no clear direction for this stock based on current inputs.',
