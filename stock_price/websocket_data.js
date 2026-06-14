@@ -17,6 +17,9 @@ const DB_CONFIG = {
 const pool = mysql.createPool(DB_CONFIG).promise();
 const limit = 40;
 const price_store = new Map();
+const REST_REQUEST_DELAY_MS = 300;
+const REST_RATE_LIMIT_BACKOFF_MS = 1200;
+const REST_MAX_RETRIES = 2;
 
 let token_table_ready = null;
 function ensure_token_table(){
@@ -141,6 +144,7 @@ async function rest_get_price(rest_key, ticker){
         const error = new Error(data.msg1 || ('HTTP ' + response.status));
         error.status = response.status;
         error.msg_cd = data.msg_cd;
+        error.rt_cd = data.rt_cd;
         throw error;
     }
     const current_price = data.output.stck_prpr;
@@ -148,6 +152,14 @@ async function rest_get_price(rest_key, ticker){
     const low_price = data.output.stck_lwpr;
     const high_price = data.output.stck_hgpr;
     return { current_price, open_price, low_price, high_price };
+}
+
+function is_rate_limit_error(error){
+    return (
+        error &&
+        typeof error.message === 'string' &&
+        error.message.includes('초당 거래건수')
+    );
 }
 
 function handle_message(websocket, data){
@@ -276,7 +288,7 @@ function add_websocket(state, ticker, websocket, websocket_key){
 }
 
 async function start_rest(state){
-    const request_delay = 60
+    const request_delay = REST_REQUEST_DELAY_MS;
     let running  = true;
     let rest_key = await get_rest_key();
     let last_token_refresh = Date.now();
@@ -298,7 +310,20 @@ async function start_rest(state){
                 if (!running) break;
                 if (!state.cold.has(ticker)) continue;
                 try {
-                    const { current_price, open_price, low_price, high_price } = await rest_get_price(rest_key, ticker);
+                    let price = null;
+                    for (let attempt = 0; attempt <= REST_MAX_RETRIES; attempt++){
+                        try {
+                            price = await rest_get_price(rest_key, ticker);
+                            break;
+                        } catch (err) {
+                            if (is_rate_limit_error(err) && attempt < REST_MAX_RETRIES){
+                                await sleep(REST_RATE_LIMIT_BACKOFF_MS * (attempt + 1));
+                                continue;
+                            }
+                            throw err;
+                        }
+                    }
+                    const { current_price, open_price, low_price, high_price } = price;
                     price_store.set(ticker, {
                         current_price : current_price,
                         open_price : open_price,
