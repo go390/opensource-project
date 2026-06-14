@@ -9,8 +9,8 @@ DB_CONFIG = {
     'host': 'localhost',
     'port': 3306,
     'user': 'root',
-    'password': 'your_stock_db_password', // your DB password
-    'database': 'your_stock_db', // your DB
+    'password': '88003210Onon', // your DB password
+    'database': 'stocksense_stocks', // your DB
     'charset': 'utf8mb4'
 }
 

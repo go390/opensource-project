@@ -15,7 +15,7 @@ def setup():
     db.create_database()
     db.connect()
     db.create_tables()
-    print("✓ User database and tables ready.")
+    print("[OK] User database and tables ready.")
 
 if __name__ == '__main__':
     setup()

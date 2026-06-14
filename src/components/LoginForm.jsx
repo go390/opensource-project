@@ -7,37 +7,83 @@ function LoginForm({onClose,setUser}) {
   const [isLoginMode, setIsLoginMode] = useState(true);
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
+    setError("");
     setLoading(true);
 
-    setTimeout(() => {
-      const userData = {
-        name: "Munkh",
-        email: "test@gmail.com",
-      };
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await res.json();
 
-      localStorage.setItem("user", JSON.stringify(userData));
+      if (!res.ok) {
+        setError(data.error || 'Login failed');
+        setLoading(false);
+        return;
+      }
 
-      setUser(userData);
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+
+      setUser(data.user);
       setLoading(false);
       onClose();
       navigate("/");
-    }, 600);
+    } catch (err) {
+      setError('Connection error. Is the backend running?');
+      setLoading(false);
+    }
   };
 
-  const handleSignup = (e) => {
+  const handleSignup = async (e) => {
     e.preventDefault();
-    if (password.length < 8) 
+    setError("");
+
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters");
       return;
-    if (password !== confirmPassword)
+    }
+    if (password !== confirmPassword) {
+      setError("Passwords do not match");
       return;
-    
-    alert("Account created successfully!");
-    setIsLoginMode(true);
+    }
+
+    setLoading(true);
+    try {
+      const res = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, password }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error || 'Signup failed');
+        setLoading(false);
+        return;
+      }
+
+      // Server returns a token + user directly on signup — log straight in
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+      setUser(data.user);
+      setLoading(false);
+      onClose();
+      navigate("/");
+    } catch (err) {
+      setError('Connection error. Is the backend running?');
+      setLoading(false);
+    }
   };
 
   return (
@@ -73,7 +119,7 @@ function LoginForm({onClose,setUser}) {
           className={`w-1/2 text-lg font-medium transition-all z-10 ${
             isLoginMode ? "text-white" : "text-black"
           }`}
-          onClick={() => setIsLoginMode(true)}
+          onClick={() => { setIsLoginMode(true); setError(""); }}
         >
           Login
         </button>
@@ -81,7 +127,7 @@ function LoginForm({onClose,setUser}) {
           className={`w-1/2 text-lg font-medium transition-all z-10 ${
             !isLoginMode ? "text-white" : "text-black"
           }`}
-          onClick={() => setIsLoginMode(false)}
+          onClick={() => { setIsLoginMode(false); setError(""); }}
         >
           Signup
         </button>
@@ -98,6 +144,8 @@ function LoginForm({onClose,setUser}) {
             type="text"
             placeholder="Name"
             required
+            value={name}
+            onChange={(e) => setName(e.target.value)}
             className="w-full p-3 border-b-2 border-gray-300 outline-none focus:border-cyan-500 placeholder-gray-400"
           />
         )}
@@ -106,6 +154,8 @@ function LoginForm({onClose,setUser}) {
           type="email"
           placeholder="Email Address"
           required
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
           className="w-full p-3 border-b-2 border-gray-300 outline-none focus:border-cyan-500 placeholder-gray-400"
         />
         <input
@@ -145,13 +195,15 @@ function LoginForm({onClose,setUser}) {
           </>
         )}
 
+        {error && <p className="text-red-500 text-sm">{error}</p>}
+
         <button
           type="submit"
           disabled={loading}
           className="w-full p-3 bg-gradient-to-r from-green-700 via-cyan-600 to-cyan-200 text-white rounded-full text-lg font-medium hover:opacity-90 transition disabled:opacity-50 cursor-pointer"
         >
           {loading
-            ? "Logging in..."
+            ? "Please wait..."
             : isLoginMode
               ? "Login"
               : "Signup"}
@@ -164,6 +216,7 @@ function LoginForm({onClose,setUser}) {
             onClick={(e) => {
               e.preventDefault();
               setIsLoginMode(!isLoginMode);
+              setError("");
             }}
             className="text-cyan-600 hover:underline"
           >
