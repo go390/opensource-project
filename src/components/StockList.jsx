@@ -28,6 +28,16 @@ function MarketBadge({ market }) {
 }
 
 const PAGE_SIZE = 10;
+const PAGE_NUM_WINDOW = 5;
+
+function getVisiblePageNumbers(currentPage, totalPages) {
+  if (totalPages <= PAGE_NUM_WINDOW) {
+    return Array.from({ length: totalPages }, (_, i) => i + 1);
+  }
+  const start = Math.floor((currentPage - 1) / PAGE_NUM_WINDOW) * PAGE_NUM_WINDOW + 1;
+  const end = Math.min(start + PAGE_NUM_WINDOW - 1, totalPages);
+  return Array.from({ length: end - start + 1 }, (_, i) => start + i);
+}
 
 const FILTERS = [
   { label: "All Stocks", icon: <AlignJustify size={15} className="text-gray-500" /> },
@@ -61,6 +71,7 @@ export default function StockList({ stocks, watchlist, onToggle }) {
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const safePage = Math.min(page, totalPages);
   const pageItems = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
+  const visiblePages = getVisiblePageNumbers(safePage, totalPages);
 
   function handleFilterSelect(val) {
     setFilter(val);
@@ -191,7 +202,7 @@ export default function StockList({ stocks, watchlist, onToggle }) {
           </div>
         </div>
 
-        <div className="flex items-center justify-center gap-2 mt-8">
+        <div className="flex items-center justify-center gap-2 mt-8 flex-wrap">
           <button
             onClick={() => setPage(p => Math.max(1, p - 1))}
             disabled={safePage === 1}
@@ -200,7 +211,7 @@ export default function StockList({ stocks, watchlist, onToggle }) {
             <ChevronLeft size={16} /> Previous
           </button>
 
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map(n => (
+          {visiblePages.map(n => (
             <button
               key={n}
               onClick={() => setPage(n)}
@@ -216,6 +227,14 @@ export default function StockList({ stocks, watchlist, onToggle }) {
             className="flex items-center gap-1 px-4 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition"
           >
             Next <ChevronRight size={16} />
+          </button>
+
+          <button
+            onClick={() => setPage(totalPages)}
+            disabled={safePage === totalPages}
+            className="px-4 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition"
+          >
+            Last
           </button>
         </div>
       </main>
