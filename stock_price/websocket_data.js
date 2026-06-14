@@ -86,6 +86,12 @@ async function rest_get_price(rest_key, ticker){
         }
     );
     const data = await response.json();
+    if (!response.ok || data.rt_cd !== '0'){
+        const error = new Error(data.msg1 || ('HTTP ' + response.status));
+        error.status = response.status;
+        error.msg_cd = data.msg_cd;
+        throw error;
+    }
     const current_price = data.output.stck_prpr;
     const open_price = data.output.stck_oprc;
     const low_price = data.output.stck_lwpr;
@@ -96,19 +102,19 @@ async function rest_get_price(rest_key, ticker){
 function handle_message(websocket, data){
     if (data[0] === '0' || data[0] === '1'){
         const [flag, tr_id, data_count, body] = data.split('|');
-        const response = body.split('^');
-        const ticker = response[0];
-        const current_price = response[2];
-        const open_price = response[7];
-        const high_price = response[8];
-        const low_price = response[9];
-
-        price_store.set(ticker, {
-            current_price : current_price,
-            open_price : open_price,
-            low_price : low_price,
-            high_price : high_price
-        });
+        const fields = body.split('^');
+        const count = parseInt(data_count, 10) || 1;
+        const size = Math.floor(fields.length / count);
+        for (let i = 0; i < count; i++){
+            const response = fields.slice(i * size, (i + 1) * size);
+            if (!response[0]) continue;
+            price_store.set(response[0], {
+                current_price : response[2],
+                open_price : response[7],
+                low_price : response[9],
+                high_price : response[8]
+            });
+        }
         return;
     }
 
@@ -144,25 +150,34 @@ async function set_websocket(){
 
 async function first_connect(){
     const websocket_key = await get_websocket_key();
-    const websocket = new WebSocket(domain);
     const state = await set_websocket();
-    let keepalive;
-    websocket.on('open', () => {
-        for (const ticker of state.hot) { websocket.send(websocket_message(websocket_key, ticker, '1')); }
-        keepalive = setInterval(() => {
-            if (websocket.readyState === WebSocket.OPEN) { websocket.ping(); }
-        }, 60000);
-    });
+    const conn = { websocket: null, websocket_key, state };
 
-    websocket.on('message', (data) => handle_message(websocket, data.toString()));
-    websocket.on('error', (error) => console.error('websocket error:', error));
-    websocket.on('close', () => {
-        clearInterval(keepalive);
-        console.log('websocket closed');
-    });
+    function connect(){
+        const websocket = new WebSocket(domain);
+        conn.websocket = websocket;
+        let keepalive;
 
+        websocket.on('open', () => {
+            const to_subscribe = new Set([...state.hot, ...[...state.fixed].filter(t => !state.hot.has(t))]);
+            for (const ticker of to_subscribe) { websocket.send(websocket_message(websocket_key, ticker, '1')); }
+            keepalive = setInterval(() => {
+                if (websocket.readyState === WebSocket.OPEN) { websocket.ping(); }
+            }, 60000);
+        });
+
+        websocket.on('message', (data) => handle_message(websocket, data.toString()));
+        websocket.on('error', (error) => console.error('websocket error:', error));
+        websocket.on('close', () => {
+            clearInterval(keepalive);
+            console.log('websocket closed, reconnecting in 5s');
+            setTimeout(connect, 5000);
+        });
+    }
+
+    connect();
     start_rest(state);
-    return { websocket, websocket_key, state };
+    return conn;
 }
 
 function delete_websocket(state, ticker, websocket, websocket_key){
@@ -184,7 +199,7 @@ function delete_websocket(state, ticker, websocket, websocket_key){
             websocket.send(websocket_message(websocket_key, last, '1'));
         }
     }
-    else { return state; }
+    return state;
 }
 
 function add_websocket(state, ticker, websocket, websocket_key){
@@ -206,12 +221,25 @@ function add_websocket(state, ticker, websocket, websocket_key){
         websocket.send(websocket_message(websocket_key, ticker, '1'));
         return state;
     }
+    return state;
 }
 
 async function start_rest(state){
     const request_delay = 60
     let running  = true;
     let rest_key = await get_rest_key();
+    let last_token_refresh = Date.now();
+
+    async function refresh_token(){
+        if (Date.now() - last_token_refresh < 60000) return;
+        try {
+            rest_key = await get_rest_key();
+            last_token_refresh = Date.now();
+        } catch (err) {
+            console.error('failed to refresh rest_key:', err.message);
+        }
+    }
+
     async function loop(){
         while (running){
             const snapshot = [...state.cold];
@@ -227,8 +255,12 @@ async function start_rest(state){
                         high_price : high_price
                     });
                 } catch (err) {
-                    console.error("rest_key expired");
-                    rest_key = await get_rest_key();
+                    if (err.status === 401 || err.msg_cd === 'EGW00123'){
+                        console.error('rest_key expired, refreshing');
+                        await refresh_token();
+                    } else {
+                        console.error('rest_get_price failed for', ticker, '-', err.message);
+                    }
                 }
                 await sleep(request_delay);
             }

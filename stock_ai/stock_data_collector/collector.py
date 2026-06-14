@@ -170,7 +170,7 @@ class collect:
                     collect_end = collect_end_date.strftime("%Y%m%d")
 
                     try:
-                        balance = stock.get_shorting_balance_by_date(collect_start, collect_end_date, ticker)
+                        balance = stock.get_shorting_balance_by_date(collect_start, collect_end, ticker)
                         volume = stock.get_shorting_volume_by_date(collect_start, collect_end, ticker)
 
                         if not balance.empty and not volume.empty:
@@ -191,12 +191,19 @@ class collect:
                 shorting_balance = pd.concat(total_balance)
                 shorting_volume  = pd.concat(total_volume)
 
+                common = shorting_volume.index.intersection(shorting_balance.index)
+                if common.empty:
+                    log.warning(f"shorting {ticker} no overlapping dates")
+                    continue
+                shorting_volume  = shorting_volume.loc[common]
+                shorting_balance = shorting_balance.loc[common]
+
                 shorting_dataframe = pd.DataFrame({
                     'shorting_volume':        shorting_volume['공매도'],
                     'shorting_volume_ratio':  shorting_volume['비중'],
                     'shorting_balance':       shorting_balance['공매도잔고'],
                     'shorting_balance_ratio': shorting_balance['비중'],
-                }, index=shorting_volume.index)
+                }, index=common)
                 shorting_dataframe.index.name = 'date'
                 shorting_dataframe = shorting_dataframe.reset_index()
                 shorting_dataframe['ticker'] = ticker
