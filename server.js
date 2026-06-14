@@ -1,9 +1,9 @@
-const express = require('express');
-const cors = require('cors');
-const mysql = require('mysql2/promise');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const { first_connect, price_store } = require('./stock_price/websocket_data');
+import express from 'express';
+import cors from 'cors';
+import mysql from 'mysql2/promise';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import { first_connect, price_store } from './stock_price/websocket_data.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -18,8 +18,8 @@ const USER_DB_CONFIG = {
   host: 'localhost',
   port: 3306,
   user: 'root',
-  password: '88003210Onon',
-  database: 'stocksense_users',
+  password: 'go090312',
+  database: 'user_db',
   charset: 'utf8mb4'
 };
 
@@ -27,8 +27,8 @@ const STOCK_DB_CONFIG = {
   host: 'localhost',
   port: 3306,
   user: 'root',
-  password: '88003210Onon',
-  database: 'stocksense_stocks',
+  password: 'go090312',
+  database: 'stock_db',
   charset: 'utf8mb4'
 };
 
@@ -223,8 +223,8 @@ app.get('/api/stocks', async (req, res) => {
 
     // 2. Get latest AI signals
     const [signals] = await stockPool.query(`
-      SELECT ticker, signal, prob_buy, prob_sell, prob_neutral, explanation 
-      FROM ai_signal 
+      SELECT ticker, \`signal\`, prob_buy, prob_sell, prob_neutral, explanation
+      FROM ai_signal
       WHERE date = (SELECT MAX(date) FROM ai_signal)
     `);
 
@@ -401,7 +401,7 @@ app.get('/api/stocks/:symbol', optionalAuthenticate, async (req, res) => {
         prob_buy: signal.prob_buy ? Number(signal.prob_buy) : 0.33,
         prob_sell: signal.prob_sell ? Number(signal.prob_sell) : 0.33,
         prob_neutral: signal.prob_neutral ? Number(signal.prob_neutral) : 0.34,
-        reasons: signal.reasons ? JSON.parse(signal.reasons) : []
+        reasons: typeof signal.reasons === 'string' ? JSON.parse(signal.reasons) : (signal.reasons || [])
       },
       fundamental,
       investor,

@@ -2,15 +2,15 @@ const api_key = 'https://openapi.koreainvestment.com:9443';
 const domain = 'ws://ops.koreainvestment.com:21000';
 const APP_KEY = 'PSpn4hxPrrmFkwJw9AuT1lHZfA4q0IclWylq';
 const APP_SECRET = 'Tf6mJafBlISGWKWzJ90pOch7Dj+o4ysiIccBdimUIs6MvbfXzHM8sOoW2hbWCXgzqn6tnx9NRrkyQQE1DLg573+qNkkj/0bUyIfFnVBIH2JPR02evPESr2MNMptDupzWtkvJszxjVUq7/UyWrM7RakCTjo2bown5eWZmTG0HJePihBd1nG4=';
-const mysql = require('mysql2');
-const WebSocket = require('ws');
+import mysql from 'mysql2';
+import WebSocket from 'ws';
 
-DB_CONFIG = {
+const DB_CONFIG = {
     'host': 'localhost',
     'port': 3306,
     'user': 'root',
-    'password': '88003210Onon', // your DB password
-    'database': 'stocksense_stocks', // your DB
+    'password': 'go090312', // your DB password
+    'database': 'stock_db', // your DB
     'charset': 'utf8mb4'
 }
 
@@ -18,7 +18,47 @@ const pool = mysql.createPool(DB_CONFIG).promise();
 const limit = 40;
 const price_store = new Map();
 
+let token_table_ready = null;
+function ensure_token_table(){
+    if (!token_table_ready){
+        token_table_ready = pool.query(`
+            CREATE TABLE IF NOT EXISTS api_token (
+                token_type  VARCHAR(20)  NOT NULL,
+                token       TEXT         NOT NULL,
+                expires_at  DATETIME     NOT NULL,
+                updated_at  DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP
+                            ON UPDATE CURRENT_TIMESTAMP,
+                PRIMARY KEY (token_type)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+        `);
+    }
+    return token_table_ready;
+}
+
+async function read_cached_token(type){
+    await ensure_token_table();
+    const [rows] = await pool.query(
+        'SELECT token FROM api_token WHERE token_type = ? AND expires_at > (NOW() + INTERVAL 60 SECOND)',
+        [type]
+    );
+    return rows.length ? rows[0].token : null;
+}
+
+async function save_token(type, token, ttl_seconds){
+    await ensure_token_table();
+    const expires_at = new Date(Date.now() + ttl_seconds * 1000);
+    await pool.query(
+        `INSERT INTO api_token (token_type, token, expires_at)
+         VALUES (?, ?, ?)
+         ON DUPLICATE KEY UPDATE token = VALUES(token), expires_at = VALUES(expires_at)`,
+        [type, token, expires_at]
+    );
+}
+
 async function get_websocket_key(){
+    const cached = await read_cached_token('websocket');
+    if (cached) return cached;
+
     const response = await fetch(
         api_key + '/oauth2/Approval', {
             method : 'POST',
@@ -31,10 +71,18 @@ async function get_websocket_key(){
         }
     );
     const data = await response.json();
+    if (data.approval_key){
+        await save_token('websocket', data.approval_key, 86400); // approval_key valid ~24h
+    }
     return data.approval_key;
 }
 
-async function get_rest_key(){
+async function get_rest_key(force = false){
+    if (!force){
+        const cached = await read_cached_token('rest');
+        if (cached) return cached;
+    }
+
     const response = await fetch(
         api_key + '/oauth2/tokenP', {
             method : 'POST',
@@ -47,6 +95,9 @@ async function get_rest_key(){
         }
     );
     const data = await response.json();
+    if (data.access_token){
+        await save_token('rest', data.access_token, Number(data.expires_in) || 86400);
+    }
     return data.access_token;
 }
 
@@ -233,7 +284,7 @@ async function start_rest(state){
     async function refresh_token(){
         if (Date.now() - last_token_refresh < 60000) return;
         try {
-            rest_key = await get_rest_key();
+            rest_key = await get_rest_key(true); // force re-issue; the cached one is expired
             last_token_refresh = Date.now();
         } catch (err) {
             console.error('failed to refresh rest_key:', err.message);
@@ -273,7 +324,7 @@ function sleep(ms){
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-module.exports = {
+export {
     first_connect,
     add_websocket,
     delete_websocket,
