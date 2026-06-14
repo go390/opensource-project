@@ -30,3 +30,4 @@ __pycache__/
 venv/
 .env
 stock_ai/stock_data_collector/config.py
+user_db/config.py
