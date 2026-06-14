@@ -111,6 +111,25 @@ function handle_message(websocket, data){
         });
         return;
     }
+
+    let message;
+    try {
+        message = JSON.parse(data);
+    } catch (err) {
+        console.error('failed to parse message:', data);
+        return;
+    }
+
+    const tr_id = message.header && message.header.tr_id;
+    if (tr_id === 'PINGPONG'){
+        websocket.pong(data);
+        return;
+    }
+
+    const rt_cd = message.body && message.body.rt_cd;
+    if (rt_cd !== undefined && rt_cd !== '0'){
+        console.error('subscribe failed:', message.body.msg1);
+    }
 }
 
 async function set_websocket(){
@@ -127,16 +146,22 @@ async function first_connect(){
     const websocket_key = await get_websocket_key();
     const websocket = new WebSocket(domain);
     const state = await set_websocket();
+    let keepalive;
     websocket.on('open', () => {
         for (const ticker of state.hot) { websocket.send(websocket_message(websocket_key, ticker, '1')); }
+        keepalive = setInterval(() => {
+            if (websocket.readyState === WebSocket.OPEN) { websocket.ping(); }
+        }, 60000);
     });
 
     websocket.on('message', (data) => handle_message(websocket, data.toString()));
     websocket.on('error', (error) => console.error('websocket error:', error));
-    websocket.on('close', () => console.log('websocket closed'));
+    websocket.on('close', () => {
+        clearInterval(keepalive);
+        console.log('websocket closed');
+    });
 
     start_rest(state);
-
     return { websocket, websocket_key, state };
 }
 
