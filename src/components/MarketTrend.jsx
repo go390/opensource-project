@@ -90,10 +90,12 @@ function MarketTrend() {
       PAD.top + innerH
     }`;
 
-    const first = values[0];
+    // headline change = the most recent step for the selected interval
+    // (1일 → latest day vs previous day, 1주 → latest week vs previous week, …)
     const last = values[values.length - 1];
-    const change = last - first;
-    const changePct = (change / first) * 100;
+    const prev = values.length > 1 ? values[values.length - 2] : last;
+    const change = last - prev;
+    const changePct = prev ? (change / prev) * 100 : 0;
 
     return { points, line, area, min, max, last, change, changePct, isUp: change >= 0 };
   }, [data]);

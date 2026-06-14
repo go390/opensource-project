@@ -3,7 +3,7 @@ import cors from 'cors';
 import mysql from 'mysql2/promise';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { first_connect, price_store } from './stock_price/websocket_data.js';
+import { first_connect, price_store, subscribe_ticker, unsubscribe_ticker } from './stock_price/websocket_data.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -422,29 +422,140 @@ app.get('/api/stocks/:symbol', optionalAuthenticate, async (req, res) => {
 
 app.get('/api/stocks/:symbol/chart', async (req, res) => {
   const { symbol } = req.params;
-  const { range } = req.query; // '1W', '1M', '1Y'
+  // interval = 'day' | 'week' | 'month' | 'year'
+  // Each chart point is one bucket; for week/month/year we take the close of
+  // the last trading day in that bucket. 'day' is simply daily closes.
+  const { interval } = req.query;
 
-  let limit = 20;
-  if (range === '1W') limit = 5;
-  else if (range === '1M') limit = 20;
-  else if (range === '1Y') limit = 250;
+  let limit;
+  let sql;
+  let params;
+  if (interval === 'week') {
+    limit = 26;
+    sql = `
+      SELECT date, stock_close FROM daily_price
+      WHERE ticker = ? AND date IN (
+        SELECT MAX(date) FROM daily_price WHERE ticker = ? GROUP BY YEARWEEK(date, 3))
+      ORDER BY date DESC LIMIT ?`;
+    params = [symbol, symbol, limit];
+  } else if (interval === 'month') {
+    limit = 24;
+    sql = `
+      SELECT date, stock_close FROM daily_price
+      WHERE ticker = ? AND date IN (
+        SELECT MAX(date) FROM daily_price WHERE ticker = ? GROUP BY YEAR(date), MONTH(date))
+      ORDER BY date DESC LIMIT ?`;
+    params = [symbol, symbol, limit];
+  } else if (interval === 'year') {
+    limit = 20;
+    sql = `
+      SELECT date, stock_close FROM daily_price
+      WHERE ticker = ? AND date IN (
+        SELECT MAX(date) FROM daily_price WHERE ticker = ? GROUP BY YEAR(date))
+      ORDER BY date DESC LIMIT ?`;
+    params = [symbol, symbol, limit];
+  } else {
+    // 'day' (default): most recent daily closes (generous window)
+    limit = 90;
+    sql = 'SELECT date, stock_close FROM daily_price WHERE ticker = ? ORDER BY date DESC LIMIT ?';
+    params = [symbol, limit];
+  }
 
   try {
-    const [rows] = await stockPool.query(
-      'SELECT date, stock_close FROM daily_price WHERE ticker = ? ORDER BY date DESC LIMIT ?',
-      [symbol, limit]
-    );
+    const [rows] = await stockPool.query(sql, params);
 
     const chartData = rows.reverse().map(r => ({
       date: formatDateOnly(r.date),
       close: Number(r.stock_close)
     }));
 
+    // Overlay the live intraday price onto the most recent point so the chart
+    // reflects current market movement. If today already has a stored row we
+    // update it; otherwise we append today's live point.
+    const liveData = price_store.get(symbol);
+    const livePrice = liveData ? Number(liveData.current_price) : 0;
+    if (livePrice > 0 && chartData.length > 0) {
+      const today = formatDateOnly(new Date());
+      const lastPoint = chartData[chartData.length - 1];
+      if (lastPoint.date === today) {
+        lastPoint.close = livePrice;
+      } else {
+        chartData.push({ date: today, close: livePrice });
+      }
+    }
+
     res.json({ chartData });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Internal server error' });
   }
+});
+
+// ─── LIVE QUOTE + SUBSCRIPTION ENDPOINTS ─────────────────────────────────────
+
+// Lightweight live price for polling (price/change/OHLC only).
+app.get('/api/stocks/:symbol/quote', async (req, res) => {
+  const { symbol } = req.params;
+  try {
+    const [priceRows] = await stockPool.query(
+      'SELECT * FROM daily_price WHERE ticker = ? ORDER BY date DESC LIMIT 2',
+      [symbol]
+    );
+    if (priceRows.length === 0) {
+      return res.status(404).json({ error: 'Price data not found' });
+    }
+
+    const latestPrice = priceRows[0];
+    const prevPrice = priceRows[1] || latestPrice;
+
+    let price = Number(latestPrice.stock_close);
+    let open = Number(latestPrice.stock_open);
+    let high = Number(latestPrice.stock_high);
+    let low = Number(latestPrice.stock_low);
+    let changePct = Number(latestPrice.stock_change || 0);
+    let change = price - Number(prevPrice.stock_close);
+    let live = false;
+
+    const liveData = price_store.get(symbol);
+    const livePrice = liveData ? Number(liveData.current_price) : 0;
+    if (livePrice > 0) {
+      live = true;
+      price = livePrice;
+      open = Number(liveData.open_price) || open;
+      high = Number(liveData.high_price) || high;
+      low = Number(liveData.low_price) || low;
+      if (liveData.change_pct !== undefined && liveData.change_pct !== '') {
+        changePct = Number(liveData.change_pct);
+        change = Number(liveData.change);
+      }
+    }
+
+    res.json({
+      symbol,
+      price,
+      open,
+      high,
+      low,
+      change: Math.round(change),
+      changePct: Number(changePct.toFixed(2)),
+      live
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Subscribe / unsubscribe a ticker to the live websocket feed based on whether
+// a user is currently viewing it.
+app.post('/api/stocks/:symbol/subscribe', (req, res) => {
+  const ok = subscribe_ticker(req.params.symbol);
+  res.json({ subscribed: ok });
+});
+
+app.post('/api/stocks/:symbol/unsubscribe', (req, res) => {
+  const ok = unsubscribe_ticker(req.params.symbol);
+  res.json({ unsubscribed: ok });
 });
 
 // ─── MARKET DATA ENDPOINTS ───────────────────────────────────────────────────

@@ -218,10 +218,59 @@ async function set_websocket(){
     return { first: new Set(), hot, cold, fixed: new Set() };
 }
 
+// Reference to the live connection so view-based subscribe/unsubscribe can
+// reach the current websocket + state (conn.websocket is swapped on reconnect).
+let active_conn = null;
+
+// Reference-counted set of tickers currently being viewed, so concurrent
+// viewers of the same stock don't unsubscribe each other.
+const view_counts = new Map();
+
+function can_send(){
+    return active_conn
+        && active_conn.websocket
+        && active_conn.websocket.readyState === WebSocket.OPEN;
+}
+
+// Called when a user opens a stock detail page.
+function subscribe_ticker(ticker){
+    const next = (view_counts.get(ticker) || 0) + 1;
+    view_counts.set(ticker, next);
+    if (next > 1) return true;            // already subscribed by another viewer
+    if (!can_send()) return false;
+    try {
+        add_websocket(active_conn.state, ticker, active_conn.websocket, active_conn.websocket_key);
+        return true;
+    } catch (err) {
+        console.error('subscribe_ticker failed for', ticker, '-', err.message);
+        return false;
+    }
+}
+
+// Called when a user leaves a stock detail page.
+function unsubscribe_ticker(ticker){
+    const current = view_counts.get(ticker) || 0;
+    if (current <= 0) return false;
+    if (current > 1){                     // still being viewed elsewhere
+        view_counts.set(ticker, current - 1);
+        return true;
+    }
+    view_counts.delete(ticker);
+    if (!can_send()) return false;
+    try {
+        delete_websocket(active_conn.state, ticker, active_conn.websocket, active_conn.websocket_key);
+        return true;
+    } catch (err) {
+        console.error('unsubscribe_ticker failed for', ticker, '-', err.message);
+        return false;
+    }
+}
+
 async function first_connect(){
     const websocket_key = await get_websocket_key();
     const state = await set_websocket();
     const conn = { websocket: null, websocket_key, state };
+    active_conn = conn;
 
     function connect(){
         const websocket = new WebSocket(domain);
@@ -362,5 +411,7 @@ export {
     first_connect,
     add_websocket,
     delete_websocket,
+    subscribe_ticker,
+    unsubscribe_ticker,
     price_store
 };
