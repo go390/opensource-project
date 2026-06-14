@@ -28,6 +28,6 @@ MARKET = 'KOSPI' # KOSPI or KOSDAQ
 SLEEP_TIME = 0.5 # delay time for calling pykrx (if it is too short you can be banned by the krx)
 
 INCREASE_RATE = 0.05
-FORWARD_DAYS  = 30
+FORWARD_DAYS  = 10
 TEST_RATIO    = 0.2
 MODEL_PATH    = 'model.lgb'

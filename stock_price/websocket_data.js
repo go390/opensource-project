@@ -151,8 +151,8 @@ async function rest_get_price(rest_key, ticker){
     const open_price = data.output.stck_oprc;
     const low_price = data.output.stck_lwpr;
     const high_price = data.output.stck_hgpr;
-    const change = data.output.prdy_vrss;      // change vs previous close (already signed)
-    const change_pct = data.output.prdy_ctrt;  // percent change vs previous close (already signed)
+    const change = data.output.prdy_vrss;
+    const change_pct = data.output.prdy_ctrt;
     return { current_price, open_price, low_price, high_price, change, change_pct };
 }
 
@@ -173,8 +173,6 @@ function handle_message(websocket, data){
         for (let i = 0; i < count; i++){
             const response = fields.slice(i * size, (i + 1) * size);
             if (!response[0]) continue;
-            // H0UNCNT0 fields: [3]=전일대비부호 [4]=전일대비(절대값) [5]=전일대비율
-            // sign 4(하한)/5(하락) means a negative move; apply it to the magnitudes.
             const negative = response[3] === '4' || response[3] === '5';
             price_store.set(response[0], {
                 current_price : response[2],
@@ -218,12 +216,7 @@ async function set_websocket(){
     return { first: new Set(), hot, cold, fixed: new Set() };
 }
 
-// Reference to the live connection so view-based subscribe/unsubscribe can
-// reach the current websocket + state (conn.websocket is swapped on reconnect).
 let active_conn = null;
-
-// Reference-counted set of tickers currently being viewed, so concurrent
-// viewers of the same stock don't unsubscribe each other.
 const view_counts = new Map();
 
 function can_send(){
@@ -236,7 +229,7 @@ function can_send(){
 function subscribe_ticker(ticker){
     const next = (view_counts.get(ticker) || 0) + 1;
     view_counts.set(ticker, next);
-    if (next > 1) return true;            // already subscribed by another viewer
+    if (next > 1) return true;
     if (!can_send()) return false;
     try {
         add_websocket(active_conn.state, ticker, active_conn.websocket, active_conn.websocket_key);
@@ -247,11 +240,10 @@ function subscribe_ticker(ticker){
     }
 }
 
-// Called when a user leaves a stock detail page.
 function unsubscribe_ticker(ticker){
     const current = view_counts.get(ticker) || 0;
     if (current <= 0) return false;
-    if (current > 1){                     // still being viewed elsewhere
+    if (current > 1){
         view_counts.set(ticker, current - 1);
         return true;
     }
@@ -352,7 +344,7 @@ async function start_rest(state){
     async function refresh_token(){
         if (Date.now() - last_token_refresh < 60000) return;
         try {
-            rest_key = await get_rest_key(true); // force re-issue; the cached one is expired
+            rest_key = await get_rest_key(true);
             last_token_refresh = Date.now();
         } catch (err) {
             console.error('failed to refresh rest_key:', err.message);
