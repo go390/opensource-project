@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { useState, useEffect} from "react";
+import { useState, useEffect } from "react";
 
 import Nav from "./components/Nav";
 import Home from "./pages/Home";
@@ -11,10 +11,21 @@ import Dashboard from "./pages/Dashboard";
 import About from "./pages/About";
 import StockDetail from "./pages/StockDetail";
 import ViewAll from "./pages/ViewAll";
-import { stocks } from "./data/stocks";
+
+export const authFetch = (url, options = {}) => {
+  const token = localStorage.getItem('token');
+  return fetch(url, {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+      ...(options.headers || {}),
+    },
+  });
+};
 
 function App() {
-  
+
   const [showLogin, setShowLogin] = useState(false);
   const [user, setUser] = useState(() => {
     const savedUser = localStorage.getItem("user");
@@ -22,32 +33,54 @@ function App() {
     return null;
   });
 
-  const [watchlist, setWatchlist] = useState(() => {
-    const savedWatchlist = localStorage.getItem("watchlist");
-    if (savedWatchlist) {
-      return JSON.parse(savedWatchlist);
-    }
-    return {};
-  });
-  
-  useEffect(() => {
-    localStorage.setItem(
-      "watchlist",
-      JSON.stringify(watchlist)
-    );
-  }, [watchlist]);
-
+  const [stocks, setStocks] = useState([]);
+  const [watchlist, setWatchlist] = useState({});
   const [toast, setToast] = useState(null);
+
+  // Load the live stock list from the backend
+  useEffect(() => {
+    fetch('/api/stocks')
+      .then(r => r.json())
+      .then(d => {
+        const withIds = (d.stocks || []).map((s, i) => ({ ...s, id: i + 1 }));
+        setStocks(withIds);
+      })
+      .catch(() => setStocks([]));
+  }, []);
+
+  // Load this user's watchlist from the backend whenever stocks/user change
+  useEffect(() => {
+    if (!user || stocks.length === 0) {
+      if (!user) setWatchlist({});
+      return;
+    }
+    authFetch('/api/watchlist')
+      .then(r => r.json())
+      .then(d => {
+        const tickers = new Set(d.watchlist || []);
+        const map = {};
+        stocks.forEach(s => {
+          if (tickers.has(s.symbol)) map[s.id] = true;
+        });
+        setWatchlist(map);
+      })
+      .catch(() => {});
+  }, [user, stocks]);
 
   const toggleWatchlist = (id) => {
     if (!user) {
-    setShowLogin(true);
-    return;
+      setShowLogin(true);
+      return;
     }
     const stock = stocks.find((s) => s.id === id);
     const isAdding = !watchlist[id];
 
     setWatchlist((prev) => ({ ...prev, [id]: !prev[id] }));
+
+    authFetch('/api/watchlist/toggle', {
+      method: 'POST',
+      body: JSON.stringify({ symbol: stock.symbol }),
+    }).catch(() => {});
 
     if (isAdding) {
       setToast({
@@ -80,10 +113,10 @@ function App() {
             watchlist={watchlist}
             onToggle={toggleWatchlist} />
         } />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route 
-          path="/dashboard/recommendations/:type" 
-          element={<ViewAll />} 
+        <Route path="/dashboard" element={<Dashboard stocks={stocks} />} />
+        <Route
+          path="/dashboard/recommendations/:type"
+          element={<ViewAll stocks={stocks} />}
         />
         <Route path="/about" element={<About />} />
       </Routes>

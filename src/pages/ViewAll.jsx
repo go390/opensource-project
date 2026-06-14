@@ -1,6 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { TrendingUp, TrendingDown, ArrowLeft, Minus } from "lucide-react";
-import { stocks } from "../data/stocks";
 
 const signalStyle = {
   BUY: "bg-green-100 text-green-600 border-green-200",
@@ -14,7 +13,7 @@ const pageInfo = {
   NEUTRAL: { label: "NEUTRAL Recommendations", sub: "Stocks with no strong signal either way", icon: <Minus size={28} className="text-blue-400" /> },
 };
 
-export default function ViewAll() {
+export default function ViewAll({ stocks = [] }) {
   const { type } = useParams();
   const navigate = useNavigate();
 

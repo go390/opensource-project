@@ -2,6 +2,7 @@ import { useState } from "react";
 import { LogOut, Star } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Watchlist from "./Watchlist";
+import { authFetch } from "../App";
 
 function UserProfile({ user, setUser, setWatchlist }) {
   const [open, setOpen] = useState(false);
@@ -10,9 +11,11 @@ function UserProfile({ user, setUser, setWatchlist }) {
 
   const handleLogout = () => {
     setLoggingOut(true);
+    authFetch('/api/auth/logout', { method: 'POST' }).catch(() => {});
     navigate("/");
     setTimeout(() => {
       localStorage.removeItem("user");
+      localStorage.removeItem("token");
       localStorage.removeItem("watchlist");  
       setUser(null);
       setWatchlist({});

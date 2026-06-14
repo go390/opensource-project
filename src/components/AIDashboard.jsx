@@ -2,11 +2,6 @@ import { useState, useEffect } from "react";
 import { Clock, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
-import { stocks } from "../data/stocks";
-
-const buyStocks = stocks.filter(s => ["buy"].includes(s.recommendation));
-const neutralStocks = stocks.filter(s => ["neutral"].includes(s.recommendation));
-const sellStocks = stocks.filter(s => ["sell"].includes(s.recommendation));
 
 function StockCard({ stock, mood }) {
   const isUp = stock.changePct >= 0;
@@ -65,7 +60,7 @@ function RecommendationColumn({ label, stocks, mood, Color, viewAllPath, }) {
   );
 }
 
-export default function AIDashboard() {
+export default function AIDashboard({ stocks = [] }) {
   const [currentTime, setCurrentTime] = useState(new Date());
 
   useEffect(() => {
@@ -76,6 +71,10 @@ export default function AIDashboard() {
   const formattedTime = currentTime.toLocaleString("en-US", {
     month: "short", day: "numeric", hour: "2-digit", minute: "2-digit",
   });
+
+  const buyStocks     = stocks.filter(s => s.recommendation === "buy");
+  const neutralStocks = stocks.filter(s => s.recommendation === "neutral");
+  const sellStocks    = stocks.filter(s => s.recommendation === "sell");
 
   return (
     <div className="min-h-screen bg-white font-sans">
@@ -92,31 +91,35 @@ export default function AIDashboard() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
-          <RecommendationColumn
-            label="BUY"
-            stocks={buyStocks}
-            mood="buy"
-            Color="green"
-            viewAllPath="/dashboard/recommendations/buy"
-          />
+        {stocks.length === 0 ? (
+          <p className="text-sm text-gray-400">Loading recommendations…</p>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+            <RecommendationColumn
+              label="BUY"
+              stocks={buyStocks}
+              mood="buy"
+              Color="green"
+              viewAllPath="/dashboard/recommendations/buy"
+            />
 
-          <RecommendationColumn
-            label="NEUTRAL"
-            stocks={neutralStocks}
-            mood="neutral"
-            Color="blue"
-            viewAllPath="/dashboard/recommendations/neutral"
-          />
+            <RecommendationColumn
+              label="NEUTRAL"
+              stocks={neutralStocks}
+              mood="neutral"
+              Color="blue"
+              viewAllPath="/dashboard/recommendations/neutral"
+            />
 
-          <RecommendationColumn
-            label="SELL"
-            stocks={sellStocks}
-            mood="sell"
-            Color="red"
-            viewAllPath="/dashboard/recommendations/sell"
-          />
-        </div>
+            <RecommendationColumn
+              label="SELL"
+              stocks={sellStocks}
+              mood="sell"
+              Color="red"
+              viewAllPath="/dashboard/recommendations/sell"
+            />
+          </div>
+        )}
 
       </div>
     </div>

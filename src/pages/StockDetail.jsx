@@ -1,21 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, TrendingUp, TrendingDown } from "lucide-react";
-import { stocks } from "../data/stocks";
-
-function getSignal(changePct) {
-  if (changePct >= 1.5)  return "BUY";
-  if (changePct <= -1.0) return "SELL";
-  return "NEUTRAL";
-}
-
-function getSignalReason(signal, name) {
-  if (signal === "BUY")
-    return `${name} shows strong upward momentum with positive volume trends. Technical indicators support a bullish near-term outlook.`;
-  if (signal === "SELL")
-    return `${name} is facing downward pressure with weakening momentum signals. Risk/reward is unfavorable at current levels.`;
-  return `${name} is trading within a stable range. No strong catalyst in either direction — hold pending clearer momentum.`;
-}
 
 function PriceChart({ isUp }) {
   const [range, setRange] = useState("1M");
@@ -74,12 +59,34 @@ function StatCard({ label, value, sub }) {
 }
 
 export default function StockDetail() {
-  const { symbol } = useParams(); 
+  const { symbol } = useParams();
   const navigate   = useNavigate();
 
-  const stock = stocks.find(s => s.symbol === symbol);
+  const [stock, setStock]     = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError]     = useState(false);
 
-  if (!stock) {
+  useEffect(() => {
+    setLoading(true);
+    setError(false);
+    fetch(`/api/stocks/${symbol}`)
+      .then(r => {
+        if (!r.ok) throw new Error('not found');
+        return r.json();
+      })
+      .then(d => { setStock(d); setLoading(false); })
+      .catch(() => { setError(true); setLoading(false); });
+  }, [symbol]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <p className="text-gray-400 text-sm">Loading…</p>
+      </div>
+    );
+  }
+
+  if (error || !stock) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -94,8 +101,9 @@ export default function StockDetail() {
   }
 
   const isUp   = stock.changePct >= 0;
-  const signal = getSignal(stock.changePct);
-  const reason = getSignalReason(signal, stock.name);
+  const signal = (stock.ai && stock.ai.signal) || "NEUTRAL";
+  const reason = (stock.ai && stock.ai.explanation) ||
+    `${stock.name} is trading within a stable range. No strong catalyst in either direction — hold pending clearer momentum.`;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -149,7 +157,7 @@ export default function StockDetail() {
           <div className="grid grid-cols-2 gap-3 mb-4">
             <div className="border border-gray-100 rounded-xl p-3 sm:p-4">
               <p className="text-xs text-gray-400 mb-1">Market Cap</p>
-              <p className="text-base font-bold text-gray-900">₩{stock.marketCap ?? "—"}</p>
+              <p className="text-base font-bold text-gray-900">{stock.marketCap ?? "—"}</p>
             </div>
             <div className="border border-gray-100 rounded-xl p-3 sm:p-4">
               <p className="text-xs text-gray-400 mb-1">52 Week Range</p>
