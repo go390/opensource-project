@@ -20,7 +20,9 @@ export default function ViewAll({ stocks = [] }) {
   const signal = type?.toUpperCase();
   const info = pageInfo[signal];
 
-  const filtered = stocks.filter(s => s.recommendation.toUpperCase() === signal );
+  const filtered = stocks
+    .filter(s => s.recommendation.toUpperCase() === signal)
+    .sort((a, b) => (b.volumeRaw ?? 0) - (a.volumeRaw ?? 0)); // highest volume first
 
   if (!info) {
     return (

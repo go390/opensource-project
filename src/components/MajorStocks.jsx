@@ -1,10 +1,6 @@
 import { TrendingUp, TrendingDown, ArrowRight } from "lucide-react";
 import { Link,useNavigate } from "react-router-dom";
 
-import { stocks } from "../data/stocks";
-
-const topStocks = [...stocks].sort((a, b) => b.volume - a.volume).slice(0, 3);
-
 function StockRow({ stock }) {
   const navigate = useNavigate();
   const isUp = stock.changePct >= 0;
@@ -34,7 +30,12 @@ function StockRow({ stock }) {
   );
 }
 
-export default function MajorStocks() {
+export default function MajorStocks({ stocks = [] }) {
+  // Top 3 by traded volume (volumeRaw is the numeric volume from the API).
+  const topStocks = [...stocks]
+    .sort((a, b) => (b.volumeRaw ?? 0) - (a.volumeRaw ?? 0))
+    .slice(0, 3);
+
   return (
     <div className="bg-white rounded-3xl border border-gray-200 shadow-sm p-6 h-full flex flex-col">
       <h2 className="text-2xl font-bold text-[#081633] mb-3">Major Stocks</h2>

@@ -3,7 +3,7 @@ import Hero from "../components/Hero";
 import MajorStocks from "../components/MajorStocks";
 import MarketTrend from "../components/MarketTrend";
 
-function Home({ setShowLogin }) {
+function Home({ setShowLogin, stocks = [] }) {
   return (
     <>
       <Hero />
@@ -16,7 +16,7 @@ function Home({ setShowLogin }) {
           </div>
 
           <div className="lg:col-span-2">
-            <MajorStocks />
+            <MajorStocks stocks={stocks} />
           </div>
 
         </div>

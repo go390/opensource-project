@@ -100,7 +100,7 @@ function App() {
         stocks={stocks} />
 
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<Home stocks={stocks} setShowLogin={setShowLogin} />} />
         <Route path="/stocks" element={
           <Stocks
             stocks={stocks}

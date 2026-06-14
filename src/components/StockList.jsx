@@ -65,7 +65,8 @@ export default function StockList({ stocks, watchlist, onToggle }) {
       );
     }
 
-    return list;
+    // Sort by traded volume, highest first.
+    return [...list].sort((a, b) => (b.volumeRaw ?? 0) - (a.volumeRaw ?? 0));
   }, [filter, query, stocks]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));

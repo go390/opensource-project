@@ -151,7 +151,9 @@ async function rest_get_price(rest_key, ticker){
     const open_price = data.output.stck_oprc;
     const low_price = data.output.stck_lwpr;
     const high_price = data.output.stck_hgpr;
-    return { current_price, open_price, low_price, high_price };
+    const change = data.output.prdy_vrss;      // change vs previous close (already signed)
+    const change_pct = data.output.prdy_ctrt;  // percent change vs previous close (already signed)
+    return { current_price, open_price, low_price, high_price, change, change_pct };
 }
 
 function is_rate_limit_error(error){
@@ -171,11 +173,16 @@ function handle_message(websocket, data){
         for (let i = 0; i < count; i++){
             const response = fields.slice(i * size, (i + 1) * size);
             if (!response[0]) continue;
+            // H0UNCNT0 fields: [3]=전일대비부호 [4]=전일대비(절대값) [5]=전일대비율
+            // sign 4(하한)/5(하락) means a negative move; apply it to the magnitudes.
+            const negative = response[3] === '4' || response[3] === '5';
             price_store.set(response[0], {
                 current_price : response[2],
                 open_price : response[7],
                 low_price : response[9],
-                high_price : response[8]
+                high_price : response[8],
+                change : (negative ? '-' : '') + response[4],
+                change_pct : (negative ? '-' : '') + response[5]
             });
         }
         return;
@@ -323,12 +330,14 @@ async function start_rest(state){
                             throw err;
                         }
                     }
-                    const { current_price, open_price, low_price, high_price } = price;
+                    const { current_price, open_price, low_price, high_price, change, change_pct } = price;
                     price_store.set(ticker, {
                         current_price : current_price,
                         open_price : open_price,
                         low_price : low_price,
-                        high_price : high_price
+                        high_price : high_price,
+                        change : change,
+                        change_pct : change_pct
                     });
                 } catch (err) {
                     if (err.status === 401 || err.msg_cd === 'EGW00123'){

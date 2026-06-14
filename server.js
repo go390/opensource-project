@@ -87,6 +87,14 @@ function formatMarketCap(cap) {
   return num.toString();
 }
 
+function formatDateOnly(date) {
+  if (typeof date === 'string') return date.slice(0, 10);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 // ─── AUTHENTICATION ENDPOINTS ───────────────────────────────────────────────
 
 app.post('/api/auth/signup', async (req, res) => {
@@ -234,32 +242,29 @@ app.get('/api/stocks', async (req, res) => {
     });
 
     const stockList = prices.map(p => {
-      const liveData = price_store.get(p.ticker);
-
       let price = Number(p.stock_close);
       let open = Number(p.stock_open);
       let high = Number(p.stock_high);
       let low = Number(p.stock_low);
-      let change = 0;
+      // Default: the stored daily change (latest close vs previous close).
       let changePct = Number(p.stock_change || 0);
+      let prevClose = changePct !== 0 ? price / (1 + (changePct / 100)) : price;
+      let change = price - prevClose;
 
-      if (liveData) {
-        const livePrice = Number(liveData.current_price);
-        if (livePrice > 0) {
-          price = livePrice;
-          open = Number(liveData.open_price || p.stock_open);
-          high = Number(liveData.high_price || p.stock_high);
-          low = Number(liveData.low_price || p.stock_low);
-
-          const yesterdayClose = Number(p.stock_close);
-          change = price - yesterdayClose;
-          changePct = yesterdayClose > 0 ? (change / yesterdayClose) * 100 : 0;
+      // Overlay live data when available. The feed carries the authoritative
+      // day-over-day change (전일대비/전일대비율), so use it directly rather than
+      // subtracting against the stored close (which may be several days stale).
+      const liveData = price_store.get(p.ticker);
+      const livePrice = liveData ? Number(liveData.current_price) : 0;
+      if (livePrice > 0) {
+        price = livePrice;
+        open = Number(liveData.open_price) || open;
+        high = Number(liveData.high_price) || high;
+        low = Number(liveData.low_price) || low;
+        if (liveData.change_pct !== undefined && liveData.change_pct !== '') {
+          changePct = Number(liveData.change_pct);
+          change = Number(liveData.change);
         }
-      } else {
-        // Compute change from changePct in DB
-        // If changePct is 1.70, it means 1.70%
-        const prevClose = price / (1 + (changePct / 100));
-        change = price - prevClose;
       }
 
       const signalInfo = signalMap[p.ticker] || { signal: 'neutral', explanation: '' };
@@ -275,6 +280,7 @@ app.get('/api/stocks', async (req, res) => {
         change: Math.round(change),
         changePct: Number(changePct.toFixed(2)),
         volume: formatVolume(p.stock_volume),
+        volumeRaw: Number(p.stock_volume) || 0,
         recommendation: signalInfo.signal.toLowerCase(),
         explanation: signalInfo.explanation
       };
@@ -339,29 +345,28 @@ app.get('/api/stocks/:symbol', optionalAuthenticate, async (req, res) => {
     const range = rangeRows[0] || { week_high: null, week_low: null };
 
     // Overlay live price
-    const liveData = price_store.get(symbol);
     let price = Number(latestPrice.stock_close);
     let open = Number(latestPrice.stock_open);
     let high = Number(latestPrice.stock_high);
     let low = Number(latestPrice.stock_low);
-    let change = 0;
+    // Default: stored change vs the actual previous trading day's close.
     let changePct = Number(latestPrice.stock_change || 0);
+    let prevClose = prevPrice ? Number(prevPrice.stock_close) : price;
+    let change = price - prevClose;
 
-    if (liveData) {
-      const livePrice = Number(liveData.current_price);
-      if (livePrice > 0) {
-        price = livePrice;
-        open = Number(liveData.open_price || latestPrice.stock_open);
-        high = Number(liveData.high_price || latestPrice.stock_high);
-        low = Number(liveData.low_price || latestPrice.stock_low);
-
-        const yesterdayClose = Number(latestPrice.stock_close);
-        change = price - yesterdayClose;
-        changePct = yesterdayClose > 0 ? (change / yesterdayClose) * 100 : 0;
+    // Overlay live data when available; use the feed's own day-over-day change
+    // (전일대비/전일대비율) rather than subtracting against a possibly-stale close.
+    const liveData = price_store.get(symbol);
+    const livePrice = liveData ? Number(liveData.current_price) : 0;
+    if (livePrice > 0) {
+      price = livePrice;
+      open = Number(liveData.open_price) || open;
+      high = Number(liveData.high_price) || high;
+      low = Number(liveData.low_price) || low;
+      if (liveData.change_pct !== undefined && liveData.change_pct !== '') {
+        changePct = Number(liveData.change_pct);
+        change = Number(liveData.change);
       }
-    } else {
-      const prevClose = price / (1 + (changePct / 100));
-      change = price - prevClose;
     }
 
     const aiSignalText = (signal.signal || 'neutral').toUpperCase();
@@ -431,7 +436,7 @@ app.get('/api/stocks/:symbol/chart', async (req, res) => {
     );
 
     const chartData = rows.reverse().map(r => ({
-      date: r.date.toISOString().split('T')[0],
+      date: formatDateOnly(r.date),
       close: Number(r.stock_close)
     }));
 
@@ -445,21 +450,42 @@ app.get('/api/stocks/:symbol/chart', async (req, res) => {
 // ─── MARKET DATA ENDPOINTS ───────────────────────────────────────────────────
 
 app.get('/api/market/chart', async (req, res) => {
-  const { range } = req.query; // '1W', '1M', '1Y'
+  // interval = 'day' | 'week' | 'month' | 'year'
+  // Each chart point is one bucket; for week/month/year we take the close of
+  // the last trading day in that bucket. 'day' is simply daily closes.
+  const { interval } = req.query;
 
-  let limit = 20;
-  if (range === '1W') limit = 5;
-  else if (range === '1M') limit = 20;
-  else if (range === '1Y') limit = 250;
+  let limit;
+  let sql;
+  if (interval === 'week') {
+    limit = 26;
+    sql = `
+      SELECT date, market_end FROM market_index
+      WHERE date IN (SELECT MAX(date) FROM market_index GROUP BY YEARWEEK(date, 3))
+      ORDER BY date DESC LIMIT ?`;
+  } else if (interval === 'month') {
+    limit = 24;
+    sql = `
+      SELECT date, market_end FROM market_index
+      WHERE date IN (SELECT MAX(date) FROM market_index GROUP BY YEAR(date), MONTH(date))
+      ORDER BY date DESC LIMIT ?`;
+  } else if (interval === 'year') {
+    limit = 20;
+    sql = `
+      SELECT date, market_end FROM market_index
+      WHERE date IN (SELECT MAX(date) FROM market_index GROUP BY YEAR(date))
+      ORDER BY date DESC LIMIT ?`;
+  } else {
+    // 'day' (default): most recent daily closes
+    limit = 30;
+    sql = 'SELECT date, market_end FROM market_index ORDER BY date DESC LIMIT ?';
+  }
 
   try {
-    const [rows] = await stockPool.query(
-      'SELECT date, market_end FROM market_index ORDER BY date DESC LIMIT ?',
-      [limit]
-    );
+    const [rows] = await stockPool.query(sql, [limit]);
 
     const chartData = rows.reverse().map(r => ({
-      date: r.date.toISOString().split('T')[0],
+      date: formatDateOnly(r.date),
       close: Number(r.market_end)
     }));
 

@@ -72,9 +72,11 @@ export default function AIDashboard({ stocks = [] }) {
     month: "short", day: "numeric", hour: "2-digit", minute: "2-digit",
   });
 
-  const buyStocks     = stocks.filter(s => s.recommendation === "buy");
-  const neutralStocks = stocks.filter(s => s.recommendation === "neutral");
-  const sellStocks    = stocks.filter(s => s.recommendation === "sell");
+  // Highest traded volume first within each recommendation group.
+  const byVolume = (a, b) => (b.volumeRaw ?? 0) - (a.volumeRaw ?? 0);
+  const buyStocks     = stocks.filter(s => s.recommendation === "buy").sort(byVolume);
+  const neutralStocks = stocks.filter(s => s.recommendation === "neutral").sort(byVolume);
+  const sellStocks    = stocks.filter(s => s.recommendation === "sell").sort(byVolume);
 
   return (
     <div className="min-h-screen bg-white font-sans">
