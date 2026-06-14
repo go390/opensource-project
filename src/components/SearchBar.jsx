@@ -1,16 +1,20 @@
 import { useState } from "react";
 import { Search,X } from "lucide-react";
 import { Link } from "react-router-dom";
-import { stocks } from "../data/stocks";
 
-const SearchBar = () => {
+const SearchBar = ({ stocks = [] }) => {
   const [query, setQuery] = useState("");
 
-  const filteredStocks = stocks.filter(
-    (stock) =>
-      stock.name.toLowerCase().includes(query.toLowerCase()) ||
-      stock.ticker.toLowerCase().includes(query.toLowerCase())
-  );
+  const q = query.trim().toLowerCase();
+  const filteredStocks = q
+    ? stocks
+        .filter(
+          (stock) =>
+            (stock.name && stock.name.toLowerCase().includes(q)) ||
+            (stock.symbol && stock.symbol.toLowerCase().includes(q))
+        )
+        .slice(0, 30)
+    : [];
 
   return (
     <div className="relative w-full max-w-[580px]">
@@ -40,7 +44,7 @@ const SearchBar = () => {
           {filteredStocks.length > 0 ? (
             filteredStocks.map((stock) => (
               <Link
-                key={stock.ticker}
+                key={stock.symbol}
                 to={`/stocks/${stock.symbol}`}
                 onClick={() => setQuery("")}
                 className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors"
@@ -51,7 +55,7 @@ const SearchBar = () => {
                   </p>
 
                   <p className="text-xs text-gray-500">
-                    {stock.ticker}
+                    {stock.symbol}{stock.market ? ` · ${stock.market}` : ""}
                   </p>
                 </div>
               </Link>

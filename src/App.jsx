@@ -96,7 +96,8 @@ function App() {
         user={user}
         setUser={setUser}
         setShowLogin={setShowLogin}
-        setWatchlist={setWatchlist} />
+        setWatchlist={setWatchlist}
+        stocks={stocks} />
 
       <Routes>
         <Route path="/" element={<Home />} />

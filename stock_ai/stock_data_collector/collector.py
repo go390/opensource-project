@@ -1,8 +1,8 @@
 import time
 from datetime import datetime, timedelta
 import pandas as pd
+from .config import START_DATE, END_DATE, MARKET, SLEEP_TIME  # sets KRX_ID/KRX_PW for pykrx
 from pykrx import stock
-from .config import START_DATE, END_DATE, MARKET, SLEEP_TIME
 import logging
 
 log = logging.getLogger(__name__)

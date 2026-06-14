@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 import SearchBar from "./SearchBar";
 import UserProfile from "./UserProfile";
 
-const Nav = ({user,setUser,setShowLogin,setWatchlist}) => {
+const Nav = ({user,setUser,setShowLogin,setWatchlist,stocks=[]}) => {
   const [isOpen, setIsOpen] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [language, setLanguage] = useState("EN");
@@ -31,7 +31,7 @@ const Nav = ({user,setUser,setShowLogin,setWatchlist}) => {
           </div>
 
           <div className="hidden md:flex flex-1 justify-center px-8">
-            <SearchBar />
+            <SearchBar stocks={stocks} />
           </div>
 
           <div className="flex items-center gap-2 md:gap-6">
@@ -64,7 +64,7 @@ const Nav = ({user,setUser,setShowLogin,setWatchlist}) => {
 
         {showSearch && (
           <div className="md:hidden bg-white border-t border-gray-100 px-4 py-3">
-            <SearchBar />
+            <SearchBar stocks={stocks} />
           </div>
         )}
 

@@ -1,3 +1,10 @@
+import os
+KRX_ID = os.getenv('KRX_ID', 'go390')              # your KRX id
+KRX_PW = os.getenv('KRX_PW', 'go090312*')  # your KRX password
+
+os.environ['KRX_ID'] = KRX_ID
+os.environ['KRX_PW'] = KRX_PW
+
 DB_CONFIG = {
     'host': 'localhost',
     'port': 3306,
